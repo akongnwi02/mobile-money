@@ -17,15 +17,16 @@ return [
     /*
      * Services
      */
-    
     'services' => [
-        'iat' => [
-            'code' => env('SERVICE_IAT_CODE'),
-            'url' => env('SERVICE_IAT_URL'),
-            'key' => env('SERVICE_IAT_KEY'),
+        'orange' => [
+            'code' => env('SERVICE_ORANGE_CODE'),
+            'url' => env('SERVICE_ORANGE_URL'),
+            'key' => env('SERVICE_ORANGE_KEY'),
         ],
-        'eneo' => [
-            'code' => env('SERVICE_ENEO_CODE'),
+        'express_union' => [
+            'code' => env('SERVICE_EXPRESS_UNION_CODE'),
+            'url' => env('SERVICE_EXPRESS_UNION_URL'),
+            'key' => env('SERVICE_EXPRESS_UNION_KEY'),
         ],
     ],
 ];

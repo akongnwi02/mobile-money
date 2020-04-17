@@ -20,9 +20,9 @@ build:
 	echo "Building Docker Images"
 
 	echo "Starting Docker Containers"
-	docker-compose --project-name $(PROJECT_NAME) up -d
+	docker-compose up -d
 	echo "Installing Composer Dependencies"
-	docker exec $$(docker-compose --project-name $(PROJECT_NAME) ps -q tests) sh -c "composer install"
+	docker exec $$(docker-compose ps -q workspace) sh -c "composer install"
 	echo "Done"
 
 test:

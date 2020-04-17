@@ -2,27 +2,26 @@
 /**
  * Created by PhpStorm.
  * User: devert
- * Date: 3/18/20
- * Time: 8:53 PM
+ * Date: 4/16/20
+ * Time: 10:33 PM
  */
 
-namespace App\Services\Clients;
+namespace App\Services\Clients\Providers;
 
+
+use App\Services\Clients\ClientInterface;
 use App\Services\Objects\Account;
 
-class TestClient implements ClientInterface
+class ExpressUnionClient implements ClientInterface
 {
+    
     /**
      * @param $accountNumber
      * @return Account
      */
     public function search($accountNumber): Account
     {
-        $account = new Account();
-        $account->setAccountNumber($accountNumber)
-            ->setName('John Doe')
-            ->setReference('70487');
-        return $account;
+        // TODO: Implement search() method.
     }
     
     /**
@@ -31,6 +30,6 @@ class TestClient implements ClientInterface
      */
     public function buy(Account $account): bool
     {
-        return true;
+        // TODO: Implement buy() method.
     }
 }

@@ -9,6 +9,8 @@
 namespace App\Services\Clients;
 
 use App\Exceptions\GeneralException;
+use App\Services\Clients\Providers\ExpressUnionClient;
+use App\Services\Clients\Providers\OrangeClient;
 
 trait ClientTrait
 {
@@ -23,11 +25,11 @@ trait ClientTrait
             return new TestClient();
         }
         switch ($serviceCode) {
-            case config('app.services.iat.code'):
-                return new IATClient();
+            case config('app.services.orange.code'):
+                return new OrangeClient();
                 break;
-            case config('app.services.eneo.code'):
-                return new EneoClient();
+            case config('app.services.express_union.code'):
+                return new ExpressUnionClient();
                 break;
             default:
                 throw new GeneralException('Unknown Micro Service');

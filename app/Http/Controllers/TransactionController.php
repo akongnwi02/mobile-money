@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\GeneralException;
 use App\Exceptions\NotFoundException;
-use App\Http\Resources\PrepaidMeterResource;
+use App\Http\Resources\AccountResource;
 use App\Http\Resources\TransactionResource;
 use App\Jobs\PurchaseJob;
 use App\Models\Transaction;
@@ -23,7 +23,7 @@ class TransactionController extends Controller
     
     /**
      * @param Request $request
-     * @return PrepaidMeterResource
+     * @return AccountResource
      * @throws GeneralException
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -34,9 +34,9 @@ class TransactionController extends Controller
             'service_code' => ['required', 'string', 'min:3',],
         ]);
         
-        $meter = $this->client($request['destination_code'])->search($request['destination']);
+        $account = $this->client($request['destination_code'])->search($request['destination']);
         
-        return new PrepaidMeterResource($meter);
+        return new AccountResource($account);
         
     }
     

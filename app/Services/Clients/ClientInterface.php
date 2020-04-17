@@ -8,19 +8,19 @@
 
 namespace App\Services\Clients;
 
-use App\Services\Objects\PrepaidMeter;
+use App\Services\Objects\Account;
 
 interface ClientInterface
 {
     /**
-     * @param $meterCode
-     * @return PrepaidMeter
+     * @param $accountNumber
+     * @return Account
      */
-    public function search($meterCode): PrepaidMeter;
+    public function search($accountNumber): Account;
     
     /**
-     * @param PrepaidMeter $meter
-     * @return string
+     * @param Account $account
+     * @return bool
      */
-    public function buy(PrepaidMeter $meter) : string;
+    public function buy(Account $account) : bool;
 }
