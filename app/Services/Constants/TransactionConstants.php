@@ -10,11 +10,15 @@ namespace App\Services\Constants;
 
 class TransactionConstants
 {
-    // TransactionConstants Status
+    // Status
     const CREATED = 'created';
     const PROCESSING = 'processing';
     const SUCCESS = 'success';
     const FAILED = 'failed';
     const ERRORED = 'errored';
     const VERIFICATION = 'verification';
+    
+    // Type
+    const CASHIN = 'cashin';
+    const CASHOUT = 'cashout';
 }

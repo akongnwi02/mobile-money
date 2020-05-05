@@ -19,12 +19,14 @@ return [
      */
     'services' => [
         'orange' => [
-            'code' => env('SERVICE_ORANGE_CODE'),
+            'cashin_code' => env('SERVICE_ORANGE_CASHIN_CODE'),
+            'cashout_code' => env('SERVICE_ORANGE_CASHOUT_CODE'),
             'url' => env('SERVICE_ORANGE_URL'),
             'key' => env('SERVICE_ORANGE_KEY'),
         ],
         'express_union' => [
-            'code' => env('SERVICE_EXPRESS_UNION_CODE'),
+            'cashin_code' => env('SERVICE_EXPRESS_UNION_CASHIN_CODE'),
+            'cashout_code' => env('SERVICE_EXPRESS_UNION_CASHOUT_CODE'),
             'url' => env('SERVICE_EXPRESS_UNION_URL'),
             'key' => env('SERVICE_EXPRESS_UNION_KEY'),
         ],

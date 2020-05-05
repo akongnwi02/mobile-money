@@ -8,7 +8,7 @@ use App\Http\Resources\AccountResource;
 use App\Http\Resources\TransactionResource;
 use App\Jobs\PurchaseJob;
 use App\Models\Transaction;
-use App\Services\Clients\ClientTrait;
+use App\Services\Clients\ClientProvider;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
@@ -19,7 +19,7 @@ use Webpatser\Uuid\Uuid;
 
 class TransactionController extends Controller
 {
-    use ClientTrait;
+    use ClientProvider;
     
     /**
      * @param Request $request
@@ -50,12 +50,13 @@ class TransactionController extends Controller
     public function execute(Request $request, Transaction $transaction)
     {
         $this->validate($request, [
-            'phone'        => ['required', 'numeric', 'min:9'],
+            'phone'        => ['sometimes', 'numeric', 'min:9'],
             'destination'  => ['required', 'string', 'min:7'],
             'service_code' => ['required', 'string', 'min:3',],
             'external_id'  => ['required', 'string', Rule::unique('transactions', 'external_id')],
             'amount'       => ['required', 'numeric', 'regex:/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/'],
             'callback_url' => ['required', 'url'],
+            'reference'    => ['sometimes', 'string', 'min:4'],
         ]);
         
         $transaction->internal_id = Uuid::generate(4)->string;
@@ -65,6 +66,7 @@ class TransactionController extends Controller
         $transaction->service_code = $request['service_code'];
         $transaction->amount = $request['amount'];
         $transaction->callback_url = $request['callback_url'];
+        $transaction->reference = $request['reference'];
         $transaction->status = TransactionConstants::CREATED;
         
         if ($transaction->save()) {

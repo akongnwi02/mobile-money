@@ -15,6 +15,8 @@ class Account
     public $amount;
     public $name;
     public $reference;
+    public $serviceCode;
+    public $type;
     
     /**
      * @return mixed
@@ -85,6 +87,42 @@ class Account
     public function setName($name)
     {
         $this->name = $name;
+        return $this;
+    }
+    
+    /**
+     * @return mixed
+     */
+    public function getServiceCode()
+    {
+        return $this->serviceCode;
+    }
+    
+    /**
+     * @param mixed $serviceCode
+     * @return Account
+     */
+    public function setServiceCode($serviceCode)
+    {
+        $this->serviceCode = $serviceCode;
+        return $this;
+    }
+    
+    /**
+     * @return mixed
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+    
+    /**
+     * @param mixed $type
+     * @return Account
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
         return $this;
     }
 }

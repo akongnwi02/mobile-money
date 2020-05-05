@@ -3,15 +3,15 @@
 namespace App\Jobs;
 
 use App\Models\Transaction;
-use App\Services\Clients\ClientTrait;
+use App\Services\Clients\ClientProvider;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
-use App\Services\Objects\PrepaidMeter;
+use App\Services\Objects\Account;
 use Illuminate\Support\Facades\Log;
 
 class PurchaseJob extends Job
 {
-    use ClientTrait;
+    use ClientProvider;
     
     /**
      * @var Transaction
@@ -41,18 +41,17 @@ class PurchaseJob extends Job
     /**
      * Execute the job.
      *
-     * @param PrepaidMeter $meter
+     * @param Account $account
      * @return void
      */
-    public function handle(PrepaidMeter $meter)
+    public function handle(Account $account)
     {
         // readme
         // transaction is status created
         // when picked by process status is processing
         // when service provider rejects the transaction, it is set to failed
         // and put to callback queue
-        Log::info('Processing new
-        $transaction = $categoryClient->create($response); purchase job', [
+        Log::info('Processing new purchase job', [
             'status'         => $this->transaction->status,
             'transaction id' => $this->transaction->internal_id
         ]);
@@ -60,14 +59,14 @@ class PurchaseJob extends Job
         $this->transaction->purchase_attempts = $this->attempts();
         $this->transaction->save();
         
-        $meter->setAmount($this->transaction->amount)
-            ->setMeterCode($this->transaction->destination)
+        $account->setAmount($this->transaction->amount)
+            ->setAccountNumber($this->transaction->destination)
             ->setServiceCode($this->transaction->service_code)
-            ->setPhone($this->transaction->phone);
+            ->setReference($this->transaction->reference);
         
         try {
-            $token = $this->client($meter->getServiceCode())->buy($meter);
-            $this->transaction->asset = $token;
+            $status = $this->client($account->getServiceCode())->buy($account);
+            $this->transaction->asset = $account->getServiceCode();
             $this->transaction->status = TransactionConstants::SUCCESS;
             $this->transaction->message = 'Transaction completed successfully';
             

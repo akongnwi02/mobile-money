@@ -26,6 +26,7 @@ class CreateTransactionsTable extends Migration
             $table->string('service_code');
             $table->string('internal_id');
             $table->string('external_id')->nullable();
+            $table->string('reference')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('address')->nullable();

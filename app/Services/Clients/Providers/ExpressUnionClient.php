@@ -8,7 +8,6 @@
 
 namespace App\Services\Clients\Providers;
 
-
 use App\Services\Clients\ClientInterface;
 use App\Services\Objects\Account;
 
@@ -30,6 +29,6 @@ class ExpressUnionClient implements ClientInterface
      */
     public function buy(Account $account): bool
     {
-        // TODO: Implement buy() method.
+        // TODO: Implement cashin() method.
     }
 }
