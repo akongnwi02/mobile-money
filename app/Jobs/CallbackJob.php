@@ -53,6 +53,7 @@ class CallbackJob extends Job
             'transaction.id' => $this->transaction->id,
             'destination'    => $this->transaction->destination,
             'callback_url'   => $this->transaction->callback_url,
+            'service'        => $this->transaction->service_code,
         ]);
         
         $this->transaction->callback_attempts = $this->attempts();
@@ -67,6 +68,7 @@ class CallbackJob extends Job
                 'transaction.id'     => $this->transaction->id,
                 'destination'        => $this->transaction->destination,
                 'callback_url'       => $this->transaction->callback_url,
+                'service'            => $this->transaction->service_code,
             ]);
         } catch (\Exception $e) {
             Log::info("{$this->getJobName()}: Callback request failed", [
@@ -75,6 +77,7 @@ class CallbackJob extends Job
                 'transaction.id'     => $this->transaction->id,
                 'destination'        => $this->transaction->destination,
                 'callback_url'       => $this->transaction->callback_url,
+                'service'            => $this->transaction->service_code,
             ]);
             $this->release($this->attempts() * 2);
         }
@@ -91,6 +94,8 @@ class CallbackJob extends Job
             'transaction.external_id'       => $this->transaction->external_id,
             'transaction.amount'            => $this->transaction->amount,
             'transaction.callback_attempts' => $this->transaction->callback_attempts,
+            'transaction.service'           => $this->transaction->service_code,
+
         ]);
     }
     

@@ -6,7 +6,7 @@
  * Time: 10:33 PM
  */
 
-namespace App\Services\Clients\Providers;
+namespace App\Services\Clients\Providers\ExpressUnion;
 
 use App\Services\Clients\ClientInterface;
 use App\Services\Objects\Account;

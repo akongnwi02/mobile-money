@@ -9,10 +9,13 @@
 
 namespace App\Models;
 
+use App\Models\Attributes\TransactionAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
+    use TransactionAttribute;
+    
     protected $fillable = [];
 
     protected $casts = [

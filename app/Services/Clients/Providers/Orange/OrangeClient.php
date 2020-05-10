@@ -6,7 +6,7 @@
  * Time: 10:16 PM
  */
 
-namespace App\Services\Clients\Providers;
+namespace App\Services\Clients\Providers\Orange;
 
 
 use App\Services\Clients\ClientInterface;

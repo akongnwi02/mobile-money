@@ -8,6 +8,8 @@
 
 namespace App\Services\Clients;
 
+use App\Exceptions\BadRequestException;
+use App\Exceptions\GeneralException;
 use App\Services\Objects\Account;
 
 interface ClientInterface
@@ -20,6 +22,8 @@ interface ClientInterface
     
     /**
      * @param Account $account
+     * @throws GeneralException
+     * @throws BadRequestException
      * @return bool
      */
     public function buy(Account $account) : bool;

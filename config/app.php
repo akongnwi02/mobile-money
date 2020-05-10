@@ -4,6 +4,8 @@ return [
 
     'env' => env('APP_ENV', 'production'),
     
+    'url' => env('APP_URL'),
+    
     'api_key' => env('APP_API_KEY'),
 
     'whitelist' => env('APP_IP_WHITELIST'),
@@ -30,5 +32,14 @@ return [
             'url' => env('SERVICE_EXPRESS_UNION_URL'),
             'key' => env('SERVICE_EXPRESS_UNION_KEY'),
         ],
+        'mtn' => [
+            'cashin_code' => env('SERVICE_MTN_CASHIN_CODE'),
+            'cashout_code' => env('SERVICE_MTN_CASHOUT_CODE'),
+            'url' => env('SERVICE_MTN_URL'),
+            'key' => env('SERVICE_MTN_KEY'),
+            'environment' => env('SERVICE_MTN_TARGET_ENVIRONMENT'),
+            'cashout_key' => env('SERVICE_MTN_CASHOUT_SUBSCRIPTION_KEY'),
+            'cashin_key' => env('SERVICE_MTN_CASHIN_SUBSCRIPTION_KEY'),
+        ]
     ],
 ];

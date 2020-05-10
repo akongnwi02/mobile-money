@@ -29,12 +29,13 @@ class TransactionController extends Controller
      */
     public function search(Request $request)
     {
+        Log::info('Incoming search request', ['input' => $request->input()]);
         $this->validate($request, [
             'destination'  => ['required', 'string', 'min:7'],
             'service_code' => ['required', 'string', 'min:3',],
         ]);
         
-        $account = $this->client($request['destination_code'])->search($request['destination']);
+        $account = $this->client($request['service_code'])->search($request['destination']);
         
         return new AccountResource($account);
         
@@ -49,6 +50,7 @@ class TransactionController extends Controller
      */
     public function execute(Request $request, Transaction $transaction)
     {
+        Log::info('Incoming execute request', ['input' => $request->input()]);
         $this->validate($request, [
             'phone'        => ['sometimes', 'numeric', 'min:9'],
             'destination'  => ['required', 'string', 'min:7'],
@@ -76,7 +78,7 @@ class TransactionController extends Controller
             
             return new TransactionResource($transaction);
         }
-        throw new GeneralException(ErrorCodesConstants::TRANSACTION_CREATION_ERROR, 'error creating transaction in prepaid bill database');
+        throw new GeneralException(ErrorCodesConstants::TRANSACTION_CREATION_ERROR, 'Error creating transaction in local database');
     }
     
     /**
@@ -90,6 +92,6 @@ class TransactionController extends Controller
         if ($transaction) {
             return new TransactionResource($transaction);
         }
-        throw new NotFoundException(ErrorCodesConstants::TRANSACTION_NOT_FOUND, 'Transaction not found in prepaid bills database');
+        throw new NotFoundException(ErrorCodesConstants::TRANSACTION_NOT_FOUND, 'Transaction not found in local database');
     }
 }

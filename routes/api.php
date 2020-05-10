@@ -11,8 +11,18 @@
 |
 */
 
-$router->get('/search', ['uses' => 'TransactionController@search']);
+$router->group(['middleware' => 'auth'], function () use ($router) {
+    
+    $router->get('/search', ['uses' => 'TransactionController@search']);
+    
+    $router->post('/execute', ['uses' => 'TransactionController@execute']);
+    
+    $router->get('/status/{external_id}', ['uses' => 'TransactionController@status']);
+    
+});
 
-$router->post('/execute', ['uses' => 'TransactionController@execute']);
+/*
+ * Public Callback Routes
+ */
+$router->get('/mtn/callback', ['uses' => 'CallbackController@mtnCallback']);
 
-$router->get('/status/{external_id}', ['uses' => 'TransactionController@status']);

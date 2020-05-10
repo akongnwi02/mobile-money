@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Exceptions\BadRequestException;
 use App\Models\Transaction;
 use App\Services\Clients\ClientProvider;
+use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
 use App\Services\Objects\Account;
@@ -63,16 +64,25 @@ class PurchaseJob extends Job
         $this->transaction->purchase_attempts = $this->attempts();
         $this->transaction->save();
         
-        $meter->setAmount($this->transaction->amount)
-            ->setMeterCode($this->transaction->destination)
+        $account->setAmount($this->transaction->amount)
             ->setServiceCode($this->transaction->service_code)
-            ->setPhone($this->transaction->phone)
+            ->setAccountNumber($this->transaction->destination)
             ->setIntId($this->transaction->internal_id);
         
         try {
-            $token = $this->client($meter->getServiceCode())->buy($meter);
+            $this->client($account->getServiceCode())->buy($account);
             
-            $this->transaction->asset   = $token;
+            // if the provider will send a callback request, terminate early
+            if (! $this->transaction->is_synchronous) {
+                Log::info("{$this->getJobName()}: Transaction initiated successfully. Waiting for callback request...", [
+                    'status'         => $this->transaction->status,
+                    'transaction.id' => $this->transaction->id,
+                    'destination'    => $this->transaction->destination,
+                    'service_code'   => $this->transaction->service_code,
+                ]);
+                $this->delete();
+                return;
+            }
             $this->transaction->status  = TransactionConstants::SUCCESS;
             $this->transaction->message = 'Transaction completed successfully';
             $this->transaction->save();
@@ -80,7 +90,8 @@ class PurchaseJob extends Job
             Log::info("{$this->getJobName()}: Transaction effectuated successfully. Inserted into CALLBACK queue", [
                 'status'         => $this->transaction->status,
                 'transaction.id' => $this->transaction->id,
-                'destination'    => $this->transaction->destination
+                'destination'    => $this->transaction->destination,
+                'service'        => $this->transaction->service_code,
             ]);
             
             /*
@@ -99,6 +110,7 @@ class PurchaseJob extends Job
                 'status'         => $this->transaction->status,
                 'transaction.id' => $this->transaction->id,
                 'destination'    => $this->transaction->destination,
+                'service'        => $this->transaction->service_code,
                 'exception'      => $exception,
             ]);
             
@@ -107,7 +119,35 @@ class PurchaseJob extends Job
              */
             dispatch(new CallbackJob($this->transaction))->onQueue(QueueConstants::CALLBACK_QUEUE);
         }
+    }
+    
+    /**
+     * @param \Exception|null $exception
+     */
+    public function failed(\Exception $exception = null)
+    {
+        $this->transaction->status     = TransactionConstants::ERRORED;
+        $this->transaction->message    = 'Transaction failed unexpectedly';
+        $this->transaction->error      = $exception->getMessage();
+        $this->transaction->error_code = ErrorCodesConstants::GENERAL_CODE;
+        $this->transaction->save();
+        Log::emergency("{$this->getJobName()}: Transaction failed unexpectedly during purchase. Inserted into VERIFICATION queue", [
+            'transaction.status'      => $this->transaction->status,
+            'transaction.id'          => $this->transaction->id,
+            'transaction.destination' => $this->transaction->destination,
+            'transaction.amount'      => $this->transaction->amount,
+            'transaction.message'     => $this->transaction->message,
+            'transaction.error'       => $this->transaction->error,
+            'transaction.error_code'  => $this->transaction->error_code,
+            'transaction.external_id' => $this->transaction->external_id,
+            'transaction.service'     => $this->transaction->service_code,
+            'exception'               => $exception,
+        ]);
         
+        /*
+         * Transaction failed due to a unexpected error, dispatch to verification queue
+         */
+        dispatch(new StatusJob($this->transaction))->onQueue(QueueConstants::STATUS_QUEUE);
     }
     
     public function getJobName()

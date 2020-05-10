@@ -58,6 +58,7 @@ class StatusJob extends Job
             'status'         => $this->transaction->status,
             'transaction.id' => $this->transaction->id,
             'destination'    => $this->transaction->destination,
+            'service'        => $this->transaction->service_code,
         ]);
         
         if (in_array($this->transaction->status, [
@@ -74,9 +75,10 @@ class StatusJob extends Job
                 'transaction.error_code'            => $this->transaction->error_code,
                 'transaction.external_id'           => $this->transaction->external_id,
                 'transaction.verification_attempts' => $this->transaction->verification_attempts,
+                'transaction.service'               => $this->transaction->service_code,
+
             ]);
             $this->delete();
-            
             return;
         }
         
@@ -85,18 +87,32 @@ class StatusJob extends Job
         $this->transaction->save();
         
         try {
-            $token                      = $this->client($this->transaction->service_code)->status($this->transaction);
-            $this->transaction->asset   = $token;
+            $this->client($this->transaction->service_code)->status($this->transaction);
+            if (! $this->transaction->is_synchronous) {
+                $this->transaction->status  = TransactionConstants::PROCESSING;
+                $this->transaction->message = 'Transaction exists in provider system. Waiting callback';
+                $this->transaction->save();
+    
+                Log::info("{$this->getJobName()}: Transaction saved by verification worker. Waiting for callback from provider", [
+                    'status'         => $this->transaction->status,
+                    'transaction.id' => $this->transaction->id,
+                    'destination'    => $this->transaction->destination,
+                    'service'        => $this->transaction->service_code,
+                ]);
+                $this->delete();
+                return;
+            }
             $this->transaction->status  = TransactionConstants::SUCCESS;
             $this->transaction->message = 'Transaction updated to success by verification worker';
             $this->transaction->save();
             
             Log::info("{$this->getJobName()}: Status updated to success, inserting transaction to callback queue", [
                 'status'         => $this->transaction->status,
-                'asset'          => $this->transaction->asset,
                 'transaction.id' => $this->transaction->id,
                 'destination'    => $this->transaction->destination,
+                'service'        => $this->transaction->service_code,
             ]);
+            
             /*
              * Transaction was found successful after status verification.
              * Insert to callback queue
@@ -112,8 +128,10 @@ class StatusJob extends Job
                 'transaction.id' => $this->transaction->id,
                 'destination'    => $this->transaction->destination,
                 'callback_url'   => $this->transaction->callback_url,
+                'service'        => $this->transaction->service_code,
                 'attempts'       => $this->attempts(),
             ]);
+            
             /*
              * Delay job before attempting the next status verification
              */
@@ -137,6 +155,7 @@ class StatusJob extends Job
             'transaction.error_code'            => $this->transaction->error_code,
             'transaction.external_id'           => $this->transaction->external_id,
             'transaction.verification_attempts' => $this->transaction->verification_attempts,
+            'service'                           => $this->transaction->service_code,
             'exception'                         => $exception,
         ]);
         

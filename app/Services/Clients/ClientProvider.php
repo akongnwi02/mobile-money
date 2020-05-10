@@ -9,12 +9,12 @@
 namespace App\Services\Clients;
 
 use App\Exceptions\GeneralException;
-use App\Services\Clients\Providers\ExpressUnionCashinClient;
-use App\Services\Clients\Providers\ExpressUnionCashoutClient;
-use App\Services\Clients\Providers\ExpressUnionClient;
-use App\Services\Clients\Providers\OrangeCashinClient;
-use App\Services\Clients\Providers\OrangeCashoutClient;
-use App\Services\Clients\Providers\OrangeClient;
+use App\Services\Clients\Providers\ExpressUnion\ExpressUnionCashinClient;
+use App\Services\Clients\Providers\ExpressUnion\ExpressUnionCashoutClient;
+use App\Services\Clients\Providers\Mtn\MtnCashinClient;
+use App\Services\Clients\Providers\Mtn\MtnCashoutClient;
+use App\Services\Clients\Providers\Orange\OrangeCashinClient;
+use App\Services\Clients\Providers\Orange\OrangeCashoutClient;
 
 trait ClientProvider
 {
@@ -41,6 +41,10 @@ trait ClientProvider
             case config('app.services.express_union.cashout_code'):
                 return new ExpressUnionCashoutClient();
                 break;
+            case config('app.services.mtn.cashout_code'):
+                return new MtnCashoutClient();
+            case  config('app.services.mtn.cashin_code'):
+                return new MtnCashinClient();
             default:
                 throw new GeneralException('Unknown Micro Service');
         }

@@ -16,7 +16,8 @@ class Account
     public $name;
     public $reference;
     public $serviceCode;
-    public $type;
+    public $int_id;
+    public $active;
     
     /**
      * @return mixed
@@ -111,18 +112,36 @@ class Account
     /**
      * @return mixed
      */
-    public function getType()
+    public function getIntId()
     {
-        return $this->type;
+        return $this->int_id;
     }
     
     /**
-     * @param mixed $type
+     * @param mixed $internal_id
      * @return Account
      */
-    public function setType($type)
+    public function setIntId($internal_id)
     {
-        $this->type = $type;
+        $this->int_id = $internal_id;
+        return $this;
+    }
+    
+    /**
+     * @return mixed
+     */
+    public function getActive()
+    {
+        return $this->active;
+    }
+    
+    /**
+     * @param mixed $active
+     * @return Account
+     */
+    public function setActive($active)
+    {
+        $this->active = $active;
         return $this;
     }
 }

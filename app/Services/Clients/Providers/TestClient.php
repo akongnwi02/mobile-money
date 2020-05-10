@@ -21,7 +21,8 @@ class TestClient implements ClientInterface
         $account = new Account();
         $account->setAccountNumber($accountNumber)
             ->setName('John Doe')
-            ->setReference('70487');
+            ->setReference('70487')
+            ->setActive(true);
         return $account;
     }
     

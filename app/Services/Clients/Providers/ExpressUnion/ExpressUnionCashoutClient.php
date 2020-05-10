@@ -3,15 +3,15 @@
  * Created by PhpStorm.
  * User: devert
  * Date: 4/17/20
- * Time: 11:34 PM
+ * Time: 11:37 PM
  */
 
-namespace App\Services\Clients\Providers;
+namespace App\Services\Clients\Providers\ExpressUnion;
 
 
 use App\Services\Objects\Account;
 
-class OrangeCashoutClient extends OrangeClient
+class ExpressUnionCashoutClient extends ExpressUnionClient
 {
     public function buy(Account $account): bool
     {
