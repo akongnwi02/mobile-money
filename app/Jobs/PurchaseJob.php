@@ -73,8 +73,8 @@ class PurchaseJob extends Job
             $this->client($account->getServiceCode())->buy($account);
             
             // if the provider will send a callback request, terminate early
-            if (! $this->transaction->is_synchronous) {
-                Log::info("{$this->getJobName()}: Transaction initiated successfully. Waiting for callback request...", [
+            if ($this->transaction->is_asynchronous) {
+                Log::info("{$this->getJobName()}: Transaction initiated successfully. Waiting for callback request from service provider...", [
                     'status'         => $this->transaction->status,
                     'transaction.id' => $this->transaction->id,
                     'destination'    => $this->transaction->destination,

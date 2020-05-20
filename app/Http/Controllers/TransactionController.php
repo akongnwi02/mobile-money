@@ -58,21 +58,27 @@ class TransactionController extends Controller
             'external_id'  => ['required', 'string', Rule::unique('transactions', 'external_id')],
             'amount'       => ['required', 'numeric', 'regex:/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/'],
             'callback_url' => ['required', 'url'],
-            'auth_payload'    => ['sometimes', 'string', 'min:4'],
+            'auth_payload' => ['sometimes', 'string', 'min:4'],
         ]);
         
-        $transaction->internal_id = Uuid::generate(4)->string;
-        $transaction->external_id = $request['external_id'];
-        $transaction->phone = $request['phone'];
-        $transaction->destination = $request['destination'];
+        $transaction->internal_id  = Uuid::generate(4)->string;
+        $transaction->external_id  = $request['external_id'];
+        $transaction->phone        = $request['phone'];
+        $transaction->destination  = $request['destination'];
         $transaction->service_code = $request['service_code'];
-        $transaction->amount = $request['amount'];
+        $transaction->amount       = $request['amount'];
         $transaction->callback_url = $request['callback_url'];
-        $transaction->reference = $request['auth_payload'];
-        $transaction->status = TransactionConstants::CREATED;
+        $transaction->reference    = $request['auth_payload'];
+        $transaction->status       = TransactionConstants::CREATED;
         
         if ($transaction->save()) {
-            Log::info('New transaction created', ['status' => $transaction->status]);
+            Log::info('New transaction created', [
+                'status'       => $transaction->status,
+                'id'           => $transaction->id,
+                'external_id'  => $transaction->external_id,
+                'service_code' => $transaction->service_code,
+                'destination'  => $transaction->destination
+            ]);
             
             dispatch(new PurchaseJob($transaction))->onQueue(QueueConstants::PURCHASE_QUEUE);
             

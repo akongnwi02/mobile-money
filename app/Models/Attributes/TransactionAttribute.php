@@ -11,7 +11,7 @@ namespace App\Models\Attributes;
 
 trait TransactionAttribute
 {
-    public function getIsSynchronousAttribute()
+    public function getIsAsynchronousAttribute()
     {
         return in_array($this->service_code, [
             config('app.services.mtn.cashout_code'),

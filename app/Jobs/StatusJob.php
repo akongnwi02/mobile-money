@@ -87,9 +87,9 @@ class StatusJob extends Job
         
         try {
             $this->client($this->transaction->service_code)->status($this->transaction);
-            if (! $this->transaction->is_synchronous) {
+            if ($this->transaction->is_asynchronous) {
                 $this->transaction->status  = TransactionConstants::PROCESSING;
-                $this->transaction->message = 'Transaction exists in provider system. Waiting callback';
+                $this->transaction->message = 'Transaction exists in provider system. Waiting callback from service provider';
                 $this->transaction->save();
     
                 Log::info("{$this->getJobName()}: Transaction saved by verification worker. Waiting for callback from provider", [
