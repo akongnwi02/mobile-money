@@ -62,7 +62,7 @@ class OrangeWebPaymentClient extends OrangeClient
             'notifUrl'          => config('app.url') . '/callback/orange/wp',
             'channelUserMsisdn' => config('app.services.orange.webpayment_channel_msisdn'),
             'amount'            => "{$account->getAmount()}",
-            'subscriberMsisdn'  => $account->getAccountNumber(),
+            'subscriberMsisdn'  => substr($account->getAccountNumber(), -9),
             'pin'               => config('app.services.orange.webpayment_channel_pin'),
             /*
              * Warning!!!! Sending only the first twenty characters of the transaction uuid. As Orange only supports the first 20
