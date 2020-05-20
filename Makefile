@@ -82,3 +82,6 @@ prod-up:
 
 deploy: env prod-up
 	cp prod.env .env
+
+worker:
+	docker exec $$(docker-compose ps -q workspace) sh -c "php artisan queue:work --queue=purchase,status,callback"
