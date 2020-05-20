@@ -15,6 +15,7 @@ use App\Services\Clients\Providers\Mtn\MtnCashinClient;
 use App\Services\Clients\Providers\Mtn\MtnCashoutClient;
 use App\Services\Clients\Providers\Orange\OrangeCashinClient;
 use App\Services\Clients\Providers\Orange\OrangeCashoutClient;
+use App\Services\Clients\Providers\Orange\OrangeWebPaymentClient;
 
 trait ClientProvider
 {
@@ -29,6 +30,9 @@ trait ClientProvider
             return new TestClient();
         }
         switch ($serviceCode) {
+            case config('app.services.orange.webpayment_code'):
+                return new OrangeWebPaymentClient();
+                break;
             case config('app.services.orange.cashin_code'):
                 return new OrangeCashinClient();
                 break;
