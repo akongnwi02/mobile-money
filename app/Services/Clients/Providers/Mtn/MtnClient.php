@@ -249,7 +249,7 @@ class MtnClient implements ClientInterface
             'connect_timeout' => 120,
             'allow_redirects' => true,
             'headers'         => [
-                'Authorisation' => $token,
+                'Authorization' => $token,
                 'X-Target-Environment' => config('app.services.mtn.environment'),
                 'Ocp-Apim-Subscription-Key' => $key,
                 'Content-Type' => 'application/json'
