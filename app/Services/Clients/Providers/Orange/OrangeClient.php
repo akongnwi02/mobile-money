@@ -21,7 +21,7 @@ class OrangeClient implements ClientInterface
      */
     public function search($accountNumber): Account
     {
-        // TODO: Implement search() method.
+        throw new \BadMethodCallException('Method not implemented');
     }
     
     /**

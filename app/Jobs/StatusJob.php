@@ -43,7 +43,6 @@ class StatusJob extends Job
      * Create a new job instance.
      * @param $transaction
      */
-    
     public function __construct($transaction)
     {
         $this->transaction = $transaction;

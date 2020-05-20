@@ -58,7 +58,7 @@ class TransactionController extends Controller
             'external_id'  => ['required', 'string', Rule::unique('transactions', 'external_id')],
             'amount'       => ['required', 'numeric', 'regex:/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?$/'],
             'callback_url' => ['required', 'url'],
-            'reference'    => ['sometimes', 'string', 'min:4'],
+            'auth_payload'    => ['sometimes', 'string', 'min:4'],
         ]);
         
         $transaction->internal_id = Uuid::generate(4)->string;
@@ -68,7 +68,7 @@ class TransactionController extends Controller
         $transaction->service_code = $request['service_code'];
         $transaction->amount = $request['amount'];
         $transaction->callback_url = $request['callback_url'];
-        $transaction->reference = $request['reference'];
+        $transaction->reference = $request['auth_payload'];
         $transaction->status = TransactionConstants::CREATED;
         
         if ($transaction->save()) {

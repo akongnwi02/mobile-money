@@ -35,8 +35,11 @@ class ErrorCodesConstants
     const METER_CODE_NOT_FOUND              = '10020';
     const CALLBACK_SEND_ERROR               = '10021';
     
+    const TRANSACTION_IN_FINAL_STATUS       = '10033';
     const SUBSCRIBER_CANNOT_PERFORM         = '10035';
     const SUBSCRIBER_NOT_FOUND              = '10036';
     const INSUFFICIENT_FUNDS_IN_WALLET      = '10037';
+    
     const TRANSACTION_CANCELED              = '10038';
+    
 }
