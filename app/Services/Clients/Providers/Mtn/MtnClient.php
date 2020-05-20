@@ -148,7 +148,7 @@ class MtnClient implements ClientInterface
         try {
             $response = $httpClient->request('POST', $performUrl, [
                 'headers' => [
-                    'X-Callback-Url' => config('app.url') . '/mtn/callback',
+                    'X-Callback-Url' => config('app.url') . '/callback/mtn',
                     'X-Reference-Id' => $account->getIntId()
                 ],
                 'json' => $json

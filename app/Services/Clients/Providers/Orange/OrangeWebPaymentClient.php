@@ -59,7 +59,7 @@ class OrangeWebPaymentClient extends OrangeClient
         }
         
         $json = [
-            'notifUrl'          => config('app.url') . '/orange/wp/callback',
+            'notifUrl'          => config('app.url') . '/callback/orange/wp',
             'channelUserMsisdn' => config('app.services.orange.webpayment_channel_msisdn'),
             'amount'            => "{$account->getAmount()}",
             'subscriberMsisdn'  => $account->getAccountNumber(),

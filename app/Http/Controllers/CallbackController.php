@@ -98,7 +98,7 @@ class CallbackController extends Controller
                 'payload' => $request->input()
             ]);
     
-            throw new NotFoundException(ErrorCodesConstants::TRANSACTION_NOT_FOUND, 'Sending status updated for a transaction not existing in local system');
+            throw new NotFoundException(ErrorCodesConstants::TRANSACTION_NOT_FOUND, 'Sending status update for a transaction not existing in local system');
         }
     
         $transactionInLocalDb = [
@@ -129,7 +129,7 @@ class CallbackController extends Controller
     
         $transaction->message = $request->input('message');
         
-        if ($request->input('status' == 'SUCCESSFULL')) {
+        if ($request->input('status') == 'SUCCESSFULL') {
             $transaction->status = TransactionConstants::SUCCESS;
         }
         
@@ -146,6 +146,8 @@ class CallbackController extends Controller
         }
         else {
             $transaction->status = TransactionConstants::FAILED;
+            $transaction->error_code = ErrorCodesConstants::GENERAL_CODE;
+            $transaction->error = 'Unexpected Error';
         }
     
         $transaction->save();
