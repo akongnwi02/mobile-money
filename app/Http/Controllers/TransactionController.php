@@ -66,7 +66,7 @@ class TransactionController extends Controller
         $transaction->phone        = $request['phone'];
         $transaction->destination  = $request['destination'];
         $transaction->service_code = $request['service_code'];
-        $transaction->amount       = $request['amount'];
+        $transaction->amount       = ceil($request['amount']);
         $transaction->callback_url = $request['callback_url'];
         $transaction->reference    = $request['auth_payload'];
         $transaction->status       = TransactionConstants::CREATED;
