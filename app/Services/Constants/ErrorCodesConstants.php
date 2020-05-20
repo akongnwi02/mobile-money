@@ -42,4 +42,7 @@ class ErrorCodesConstants
     
     const TRANSACTION_CANCELED              = '10038';
     
+    const CUSTOMER_ACCOUNT_LIMIT = '10041';
+    
+    
 }

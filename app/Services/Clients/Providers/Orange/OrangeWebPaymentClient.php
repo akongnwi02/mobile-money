@@ -109,7 +109,21 @@ class OrangeWebPaymentClient extends OrangeClient
             return true;
         } else {
             $body = json_decode($content);
-            throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR, $body->message);
+            $code = $body->data->inittxnstatus;
+            switch ($code) {
+                case '00671': // FAKE NUMBER NOT IN ORANGE
+                    $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
+                    break;
+                case '99051': // NUMBER IN ORANGE BUT NOT ORANGE MONEY
+                    $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
+                    break;
+                case '60019': // BALANCE CROSSED
+                    $error_code = ErrorCodesConstants::INSUFFICIENT_FUNDS_IN_WALLET;
+                    break;
+                default:
+                    $error_code = ErrorCodesConstants::GENERAL_CODE;
+            }
+            throw new BadRequestException($error_code, $body->message);
         }
     }
     
