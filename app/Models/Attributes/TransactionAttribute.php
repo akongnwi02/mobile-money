@@ -16,6 +16,7 @@ trait TransactionAttribute
         return in_array($this->service_code, [
             config('app.services.mtn.cashout_code'),
             config('app.services.mtn.cashin_code'),
+            config('app.services.orange.webpayment_code')
         ]);
     }
 }
