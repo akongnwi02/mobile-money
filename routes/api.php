@@ -25,4 +25,5 @@ $router->group(['middleware' => 'auth'], function () use ($router) {
  * Public Callback Routes
  */
 $router->get('/mtn/callback', ['uses' => 'CallbackController@mtnCallback']);
+$router->get('/orange/wp/callback', ['uses' => 'CallbackController@orangeWpCallback']);
 

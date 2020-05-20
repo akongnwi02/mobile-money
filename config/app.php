@@ -21,10 +21,17 @@ return [
      */
     'services' => [
         'orange' => [
-            'cashin_code' => env('SERVICE_ORANGE_CASHIN_CODE'),
             'cashout_code' => env('SERVICE_ORANGE_CASHOUT_CODE'),
-            'url' => env('SERVICE_ORANGE_URL'),
+            'cashin_code' => env('SERVICE_ORANGE_CASHIN_CODE'),
             'key' => env('SERVICE_ORANGE_KEY'),
+            'url' => env('SERVICE_ORANGE_URL'),
+            'webpayment_url' => env('SERVICE_ORANGE_WEB_PAYMENT_URL'),
+            'webpayment_code' => env('SERVICE_ORANGE_WEB_PAYMENT_CODE'),
+            'webpayment_token' => env('SERVICE_ORANGE_WEB_PAYMENT_OAUTH_TOKEN'),
+            'webpayment_api_username' => env('SERVICE_ORANGE_WEB_PAYMENT_API_USERNAME'),
+            'webpayment_api_password' => env('SERVICE_ORANGE_WEB_PAYMENT_API_PASSWORD'),
+            'webpayment_channel_msisdn' => env('SERVICE_ORANGE_WEB_PAYMENT_CHANNEL_MSISDN'),
+            'webpayment_channel_pin' => env('SERVICE_ORANGE_WEB_PAYMENT_CHANNEL_PIN'),
         ],
         'express_union' => [
             'cashin_code' => env('SERVICE_EXPRESS_UNION_CASHIN_CODE'),
