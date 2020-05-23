@@ -67,7 +67,7 @@ class CallbackClient
             'connect_timeout' => 120,
             'allow_redirects' => true,
             'headers'         => [
-                'Authorization' => null,
+                'Authorization' => 'Bearer',
                 'Accept'        => 'application/json'
             ],
         ]);
