@@ -12,6 +12,7 @@ use App\Services\Clients\ClientProvider;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -99,5 +100,14 @@ class TransactionController extends Controller
             return new TransactionResource($transaction);
         }
         throw new NotFoundException(ErrorCodesConstants::TRANSACTION_NOT_FOUND, 'Transaction not found in local database');
+    }
+    
+    public function ping()
+    {
+        return response()->json([
+            'status' => 'OK',
+            'name' => config('app.name'),
+            'time' => Carbon::now()->toDateTimeString(),
+        ]);
     }
 }

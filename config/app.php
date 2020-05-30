@@ -1,7 +1,9 @@
 <?php
 
 return [
-
+    
+    'name' => env('APP_NAME'),
+    
     'env' => env('APP_ENV', 'production'),
     
     'url' => env('APP_URL'),

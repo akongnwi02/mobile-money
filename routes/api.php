@@ -22,6 +22,11 @@ $router->group(['middleware' => 'auth'], function () use ($router) {
 });
 
 /*
+ * Availability
+ */
+$router->get('/ping', ['uses' => 'TransactionController@ping']);
+
+/*
  * Public Callback Routes
  */
 $router->post('/callback/mtn', ['uses' => 'CallbackController@mtnCallback']);
