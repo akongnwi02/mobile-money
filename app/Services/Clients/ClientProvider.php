@@ -16,6 +16,7 @@ use App\Services\Clients\Providers\Mtn\MtnCashoutClient;
 use App\Services\Clients\Providers\Orange\OrangeCashinClient;
 use App\Services\Clients\Providers\Orange\OrangeCashoutClient;
 use App\Services\Clients\Providers\Orange\OrangeWebPaymentClient;
+use App\Services\Constants\ErrorCodesConstants;
 
 trait ClientProvider
 {
@@ -50,7 +51,7 @@ trait ClientProvider
             case  config('app.services.mtn.cashin_code'):
                 return new MtnCashinClient();
             default:
-                throw new GeneralException('Unknown Micro Service');
+                throw new GeneralException(ErrorCodesConstants::SERVICE_NOT_FOUND,'Unknown Micro Service');
         }
     }
 }
