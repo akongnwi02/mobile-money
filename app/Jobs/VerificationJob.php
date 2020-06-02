@@ -90,7 +90,7 @@ class VerificationJob extends Job
         }
     
         try {
-            $success = $this->client($this->transaction->service_code)->successStatus($this->transaction);
+            $success = $this->client($this->transaction->service_code)->finalStatus($this->transaction);
             if ($success) {
                 $this->transaction->status = TransactionConstants::SUCCESS;
             } else {

@@ -135,8 +135,46 @@ class OrangeWebPaymentClient extends OrangeClient
      */
     public function status($transaction)
     {
-        Log::debug("{$this->getClientName()}: Sending request to service provider to get status");
+        $status = $this->getStatus($transaction);
     
+        Log::info("{$this->getClientName()}: Transaction exists in partner system with status $status");
+        if (strtoupper($status) == 'PENDING') {
+            return true;
+        }
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a reliable state. We expect to have the status \'PENDING\'');
+    }
+    
+    /**
+     * @param $transaction
+     * @return bool
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function finalStatus($transaction)
+    {
+        $status = $this->getStatus($transaction);
+        if ($status == 'SUCCESSFULL') {
+            return true;
+        } else if (in_array($status, [
+            'FAILED',
+            'EXPIRED',
+        ])) {
+            return false;
+        } else {
+            throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not a final status');
+        }
+    }
+    
+    /**
+     * @param $transaction
+     * @return mixed
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getStatus($transaction)
+    {
+        Log::debug("{$this->getClientName()}: Sending request to service provider to get status");
+        
         $httpClient = $this->getHttpClient();
         try {
             $response = $httpClient->request('GET', "mp/paymentstatus/$transaction->merchant_id");
@@ -147,20 +185,14 @@ class OrangeWebPaymentClient extends OrangeClient
         }
         
         $content = $response->getBody()->getContents();
-    
+        
         Log::debug("{$this->getClientName()}: Response from service provider", [
             'response' => $content
         ]);
-    
+        
         $body = json_decode($content);
-    
-        $status = $body->data->status;
-    
-        Log::info("{$this->getClientName()}: Transaction exists in partner system with status $status");
-        if (strtoupper($status) == 'PENDING') {
-            return true;
-        }
-        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a reliable state. Was expecting the status \'PENDING\'');
+        
+        return $body->data->status;
     }
     
     /**
