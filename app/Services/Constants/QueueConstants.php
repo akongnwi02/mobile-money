@@ -11,7 +11,8 @@ namespace App\Services\Constants;
 
 class QueueConstants
 {
-    const PURCHASE_QUEUE = 'purchase';
-    const CALLBACK_QUEUE = 'callback';
-    const STATUS_QUEUE = 'status';
+    const PURCHASE_QUEUE     = 'purchase';
+    const CALLBACK_QUEUE     = 'callback';
+    const STATUS_QUEUE       = 'status';
+    const VERIFICATION_QUEUE = 'verification';
 }

@@ -99,6 +99,10 @@ class StatusJob extends Job
                     'service'        => $this->transaction->service_code,
                 ]);
                 $this->delete();
+    
+                // dispatch verification job to verify transaction status at regular interval
+                dispatch(new VerificationJob($this->transaction))->onQueue(QueueConstants::VERIFICATION_QUEUE);
+    
                 return;
             }
             $this->transaction->status  = TransactionConstants::SUCCESS;
