@@ -74,17 +74,18 @@ class PurchaseJob extends Job
             
             // if the provider will send a callback request, terminate early
             if ($this->transaction->is_asynchronous) {
-                Log::info("{$this->getJobName()}: Transaction initiated successfully. Waiting for callback request from service provider...", [
+                Log::info("{$this->getJobName()}: Transaction initiated successfully. Insert job to status checking queue while waiting for callback from provider", [
                     'status'         => $this->transaction->status,
                     'transaction.id' => $this->transaction->id,
                     'destination'    => $this->transaction->destination,
                     'service_code'   => $this->transaction->service_code,
                 ]);
-                $this->delete();
                 
                 // dispatch verification job to verify transaction status at regular interval
                 dispatch(new VerificationJob($this->transaction))->onQueue(QueueConstants::VERIFICATION_QUEUE);
                 
+                $this->delete();
+    
                 return;
             }
             $this->transaction->status  = TransactionConstants::SUCCESS;

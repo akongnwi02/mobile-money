@@ -158,6 +158,7 @@ class OrangeWebPaymentClient extends OrangeClient
         } else if (in_array($status, [
             'FAILED',
             'EXPIRED',
+            'CANCELLED',
         ])) {
             return false;
         } else {

@@ -11,6 +11,7 @@ namespace App\Jobs;
 
 use App\Models\Transaction;
 use App\Services\Clients\ClientProvider;
+use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
 use Illuminate\Support\Facades\Log;
@@ -95,6 +96,7 @@ class VerificationJob extends Job
                 $this->transaction->status = TransactionConstants::SUCCESS;
             } else {
                 $this->transaction->status = TransactionConstants::FAILED;
+                $this->transaction->error_code = ErrorCodesConstants::GENERAL_CODE;
             }
             $this->transaction->message = 'Final status decided by the verification manager job';
             $this->transaction->save();
@@ -135,6 +137,35 @@ class VerificationJob extends Job
         }
     }
     
+    /**
+     * @param \Exception|null $exception
+     */
+    public function failed(\Exception $exception = null)
+    {
+        $this->transaction->status         = TransactionConstants::FAILED;
+        $this->transaction->message        = 'Transaction status not yet received. Manually set to failed';
+        $this->transaction->to_be_verified = true;
+        $this->transaction->error_code = ErrorCodesConstants::GENERAL_CODE;
+        $this->transaction->save();
+        Log::emergency("{$this->getJobName()}: Transaction failed unexpectedly during status check. Inserted into CALLBACK queue", [
+            'transaction.status'                => $this->transaction->status,
+            'transaction.id'                    => $this->transaction->id,
+            'transaction.destination'           => $this->transaction->destination,
+            'transaction.amount'                => $this->transaction->amount,
+            'transaction.message'               => $this->transaction->message,
+            'transaction.error'                 => $this->transaction->error,
+            'transaction.error_code'            => $this->transaction->error_code,
+            'transaction.external_id'           => $this->transaction->external_id,
+            'transaction.verification_attempts' => $this->transaction->verification_attempts,
+            'service'                           => $this->transaction->service_code,
+            'exception'                         => $exception,
+        ]);
+        
+        /*
+         * Transaction Status cannot be determined after several retries. Send to callback queue
+         */
+        dispatch(new CallbackJob($this->transaction))->onQueue(QueueConstants::CALLBACK_QUEUE);
+    }
     public function getJobName()
     {
         return class_basename($this);

@@ -10,6 +10,7 @@ namespace App\Jobs;
 
 use App\Models\Transaction;
 use App\Services\Clients\ClientProvider;
+use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
 use Illuminate\Support\Facades\Log;
@@ -98,10 +99,11 @@ class StatusJob extends Job
                     'destination'    => $this->transaction->destination,
                     'service'        => $this->transaction->service_code,
                 ]);
-                $this->delete();
     
                 // dispatch verification job to verify transaction status at regular interval
                 dispatch(new VerificationJob($this->transaction))->onQueue(QueueConstants::VERIFICATION_QUEUE);
+    
+                $this->delete();
     
                 return;
             }
@@ -147,6 +149,7 @@ class StatusJob extends Job
         $this->transaction->status         = TransactionConstants::FAILED;
         $this->transaction->message        = 'Transaction failed unexpectedly while verifying status';
         $this->transaction->to_be_verified = true;
+        $this->transaction->error_code = ErrorCodesConstants::GENERAL_CODE;
         $this->transaction->save();
         Log::emergency("{$this->getJobName()}: Transaction failed unexpectedly during status check. Inserted into CALLBACK queue", [
             'transaction.status'                => $this->transaction->status,
