@@ -45,7 +45,7 @@ class VerificationJob extends Job
      * Time to sleep for a transaction
      * @var int
      */
-    public $sleep = 8;
+    public $sleep = 0;
     
     /**
      * Create a new job instance.
@@ -67,7 +67,7 @@ class VerificationJob extends Job
             'transaction.internal_id' => $this->transaction->internal_id,
             'transaction.amount'      => $this->transaction->amount,
         ]);
-    
+        
         // verify if transaction status is final
         if (in_array($this->transaction->status, [
             TransactionConstants::FAILED,
@@ -82,43 +82,44 @@ class VerificationJob extends Job
                 'transaction.error'                 => $this->transaction->error,
                 'transaction.error_code'            => $this->transaction->error_code,
                 'transaction.external_id'           => $this->transaction->external_id,
+                'transaction.merchant_id'           => $this->transaction->merchant_id,
+                'transaction.internal_id'           => $this->transaction->internal_id,
                 'transaction.verification_attempts' => $this->transaction->verification_attempts,
                 'transaction.service'               => $this->transaction->service_code,
-        
             ]);
             $this->delete();
             return;
         }
-    
+        
         try {
             $success = $this->client($this->transaction->service_code)->finalStatus($this->transaction);
             if ($success) {
                 $this->transaction->status = TransactionConstants::SUCCESS;
             } else {
-                $this->transaction->status = TransactionConstants::FAILED;
+                $this->transaction->status     = TransactionConstants::FAILED;
                 $this->transaction->error_code = ErrorCodesConstants::GENERAL_CODE;
             }
             $this->transaction->message = 'Final status decided by the verification manager job';
             $this->transaction->save();
-        
+            
             Log::info("{$this->getJobName()}: Final status received by verification worker, inserting transaction to callback queue", [
                 'status'         => $this->transaction->status,
                 'transaction.id' => $this->transaction->id,
                 'destination'    => $this->transaction->destination,
                 'service'        => $this->transaction->service_code,
-                'merchant_id' => $this->transaction->merchant_id,
-                'external_id' => $this->transaction->external_id,
-                'internal_id' => $this->transaction->internal_id,
+                'merchant_id'    => $this->transaction->merchant_id,
+                'external_id'    => $this->transaction->external_id,
+                'internal_id'    => $this->transaction->internal_id,
             ]);
-        
+            
             /*
              * Transaction was found successful after status verification.
              * Insert to callback queue
              */
             dispatch(new CallbackJob($this->transaction))->onQueue(QueueConstants::CALLBACK_QUEUE);
-        
+            
             $this->delete();
-        
+            
         } catch (\Exception $e) {
             Log::info("{$this->getJobName()}: Final status not yet received by verification worker. Status will be rechecked after $this->sleep seconds", [
                 'error message'  => $e->getMessage(),
@@ -127,9 +128,12 @@ class VerificationJob extends Job
                 'destination'    => $this->transaction->destination,
                 'callback_url'   => $this->transaction->callback_url,
                 'service'        => $this->transaction->service_code,
+                'merchant_id'    => $this->transaction->merchant_id,
+                'external_id'    => $this->transaction->external_id,
+                'internal_id'    => $this->transaction->internal_id,
                 'attempts'       => $this->attempts(),
             ]);
-    
+            
             /*
              * Delay job before attempting the next status verification
              */
@@ -145,7 +149,7 @@ class VerificationJob extends Job
         $this->transaction->status         = TransactionConstants::FAILED;
         $this->transaction->message        = 'Transaction status not yet received. Manually set to failed';
         $this->transaction->to_be_verified = true;
-        $this->transaction->error_code = ErrorCodesConstants::GENERAL_CODE;
+        $this->transaction->error_code     = ErrorCodesConstants::GENERAL_CODE;
         $this->transaction->save();
         Log::emergency("{$this->getJobName()}: Transaction failed unexpectedly during status check. Inserted into CALLBACK queue", [
             'transaction.status'                => $this->transaction->status,
@@ -156,6 +160,8 @@ class VerificationJob extends Job
             'transaction.error'                 => $this->transaction->error,
             'transaction.error_code'            => $this->transaction->error_code,
             'transaction.external_id'           => $this->transaction->external_id,
+            'transaction.merchant_id'           => $this->transaction->merchant_id,
+            'transaction.internal_id'           => $this->transaction->internal_id,
             'transaction.verification_attempts' => $this->transaction->verification_attempts,
             'service'                           => $this->transaction->service_code,
             'exception'                         => $exception,
@@ -166,6 +172,7 @@ class VerificationJob extends Job
          */
         dispatch(new CallbackJob($this->transaction))->onQueue(QueueConstants::CALLBACK_QUEUE);
     }
+    
     public function getJobName()
     {
         return class_basename($this);
