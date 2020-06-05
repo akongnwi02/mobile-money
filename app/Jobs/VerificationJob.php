@@ -34,7 +34,7 @@ class VerificationJob extends Job
      * Timeout
      * @var int
      */
-    public $timeout = 150;
+    public $timeout = 500;
     /**
      * Number of retries
      * @var int
@@ -45,7 +45,7 @@ class VerificationJob extends Job
      * Time to sleep for a transaction
      * @var int
      */
-    public $sleep = 0;
+    public $sleep = 5;
     
     /**
      * Create a new job instance.
