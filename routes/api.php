@@ -29,6 +29,6 @@ $router->get('/ping', ['uses' => 'TransactionController@ping']);
 /*
  * Public Callback Routes
  */
-$router->post('/callback/mtn', ['uses' => 'CallbackController@mtnCallback']);
-$router->post('/callback/orange/wp', ['uses' => 'CallbackController@orangeWpCallback']);
+$router->post('/callback/mtn', ['uses' => 'MtnCallbackController@mtnCallback']);
+$router->post('/callback/orange/wp', ['uses' => 'OrangeCallbackController@orangeWpCallback']);
 
