@@ -55,7 +55,27 @@ class CallbackJob extends Job
             'callback_url'   => $this->transaction->callback_url,
             'service'        => $this->transaction->service_code,
         ]);
+    
+        /*
+         * Make sure we don't send callback for a transaction which was previously sent
+         */
+        if ($this->transaction->is_callback_sent) {
+            Log::emergency("{$this->getJobName()}: Trying to re-send callback for a transaction which was previously sent", [
+                'transaction.status'                => $this->transaction->status,
+                'transaction.id'                    => $this->transaction->id,
+                'transaction.destination'           => $this->transaction->destination,
+                'transaction.amount'                => $this->transaction->amount,
+                'transaction.message'               => $this->transaction->message,
+                'transaction.error'                 => $this->transaction->error,
+                'transaction.error_code'            => $this->transaction->error_code,
+                'transaction.external_id'           => $this->transaction->external_id,
+                'transaction.verification_attempts' => $this->transaction->verification_attempts,
+                'transaction.service'               => $this->transaction->service_code,
         
+            ]);
+            $this->delete();
+            return;
+        }
         $this->transaction->callback_attempts = $this->attempts();
         $this->transaction->save();
         try {
