@@ -16,9 +16,17 @@ use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use mysql_xdevapi\Exception;
 
 class MtnClient implements ClientInterface
 {
+    public $config;
+    
+    public function __construct($config)
+    {
+        $this->config = $config;
+    }
+    
     /**
      * @param Account $account
      * @return bool
@@ -32,78 +40,47 @@ class MtnClient implements ClientInterface
         // IMPLEMENTED IN CHILDREN
     }
     
-    /**
-     * @param $key
-     * @param $uri
-     * @return mixed
-     * @throws GeneralException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function authenticate($key, $uri)
-    {
-        Log::debug("{$this->getClientName()}: Generating new authorization token", [
-            'url' => config('app.services.mtn.url') . $uri
-        ]);
-        $httpClient = $this->getHttpClient($key);
-        try {
-            $response = $httpClient->request('POST', $uri);
-        } catch (\Exception $exception) {
-            
-            throw new GeneralException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
-                'Error connecting to service provider to generate token: ' . $exception->getMessage());
-        }
-        
-        $content = $response->getBody()->getContents();
-        
-        Log::debug("{$this->getClientName()}: Response from service provider", [
-            'response' => $content
-        ]);
-        
-        $body = json_decode($content);
-        
-        if ($body->access_token) {
-            return $body->access_token;
-        }
-        
-        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
-    }
     
     /**
      * @param $accountNumber
-     * @param $key
-     * @param $subscription
-     * @param $serviceCode
      * @return Account
      * @throws BadRequestException
      * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function verifyNumber($accountNumber, $subscription, $key, $serviceCode): Account
+    public function verifyNumber($accountNumber): Account
     {
-        $token = $this->authenticate($key, "/$subscription/token/");
+        // TODO To be tested and re-executed
+        $bearerToken = $this->authenticate();
+        $verifyUrl = $this->config['url'] . "/{$this->config['subscription']}/v1_0/accountholder/msisdn/$accountNumber/active/";
         
-        Log::debug("{$this->getClientName()}: Verifying client account", ['account number' => $accountNumber]);
-        
-        $httpClient = $this->getHttpClient($key, $token);
+        Log::debug("{$this->getClientName()}: Verifying client account", [
+            'account number' => $accountNumber,
+            'url' => $verifyUrl,
+        ]);
+    
+        $httpClient = $this->getHttpClient($verifyUrl);
         try {
-            $response = $httpClient->request('GET', "/$subscription/v1_0/accountholder/msisdn/$accountNumber/active");
+            $response = $httpClient->request('GET', "", [
+                'headers' => ['Authorization' => "Bearer $bearerToken"]
+            ]);
         } catch (\GuzzleHttp\Exception\ServerException $exception) {
             throw new GeneralException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error connecting to service provider to verify account: ' . $exception->getMessage());
         } catch (\GuzzleHttp\Exception\ClientException $exception) {
             $response = $exception->getResponse();
         }
-        
+    
         $content = $response->getBody()->getContents();
-        
+    
         Log::debug("{$this->getClientName()}: Response from service provider", [
             'response' => $content
         ]);
-        
+    
         if ($response->getStatusCode() == 200) {
             if ($content == 'true') {
                 $account = new Account();
-                $account->setServiceCode($serviceCode)
+                $account->setServiceCode($this->config['service_code'])
                     ->setAccountNumber($accountNumber)
                     ->setActive(true);
                 return $account;
@@ -113,43 +90,185 @@ class MtnClient implements ClientInterface
             'The subscriber is not allowed to perform this transaction.');
     }
     
+    
     /**
-     * @param $account
-     * @param $subscription
-     * @param $performUrl
-     * @param $key
-     * @param $serviceCode
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
+     */
+    public function authenticate()
+    {
+        $url = $this->config['url'] . "/{$this->config['subscription']}/token/";
+        
+        $basicAuth = base64_encode($this->config['user'] . ':' . $this->config['password']);
+        
+        Log::debug("{$this->getClientName()}: Generating new authorization token for {$this->config['subscription']}", [
+            'url' => $url
+        ]);
+        
+        $httpClient = $this->getHttpClient($url);
+        try {
+            $response = $httpClient->request('POST', '', [
+                'headers' => ['Authorization' => "Basic $basicAuth"]
+            ]);
+        } catch (\Exception $exception) {
+            throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
+                'Error connecting to service provider to generate token: ' . $exception->getMessage());
+        }
+        
+        $content = $response->getBody()->getContents();
+        
+        Log::debug("{$this->getClientName()}: Response from service provider", [
+//            'response' => $content
+        ]);
+        
+        $body = json_decode($content);
+    
+        if (isset($body->access_token)) {
+            Log::info("{$this->getClientName()}: Token Retrieved successfully");
+            return $body->access_token;
+        }
+        
+        throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
+        
+    }
+    
+    /**
+     * @param $transaction
+     * @return bool
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
+     */
+    public function finalStatus($transaction)
+    {
+        $body = $this->getStatus($transaction);
+        $status = $body->status;
+        if ($status == 'SUCCESSFUL') {
+            $transaction->merchant_id = $body->financialTransactionId;
+            $transaction->save();
+            return true;
+        } else if (in_array($status, [
+            // Guessing possible status as documentation is not proper
+            'FAILED',
+            'EXPIRED',
+            'CANCELLED',
+            'CANCELED',
+            // GUESS WORK
+            'ABORTED',
+            'DELETED',
+            'TERMINATED',
+        ])) {
+            $transaction->merchant_id = $body->financialTransactionId;
+            $transaction->save();
+            return false;
+        } else {
+            throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not a final status');
+        }
+    }
+    
+    /**
+     * @param $transaction
+     * @return bool
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
+     */
+    public function verifyTransaction($transaction)
+    {
+        $status = $this->getStatus($transaction);
+        
+        Log::info("{$this->getClientName()}: Transaction exists in partner system with status $status");
+        if (strtoupper($status) == 'PENDING') {
+            return true;
+        }
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a reliable state. We expect to have the status \'PENDING\'');
+    }
+    
+    /**
+     * @param $transaction
+     * @return bool
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
+     */
+    public function getStatus($transaction)
+    {
+        $bearerToken = $this->authenticate();
+        $statusUrl = $this->config['url'] . "{$this->config['perform_uri']}/$transaction->internal_id";
+    
+        Log::debug("{$this->getClientName()}: Sending verification request to service provider", [
+            'URL' => $statusUrl,
+            'transaction.id' => $transaction->id,
+            'status' => $transaction->status,
+            'destination' => $transaction->destination,
+            'service_code' => $transaction->service_code,
+            'internal_id' => $transaction->internal_id,
+        ]);
+    
+        $httpClient = $this->getHttpClient($statusUrl);
+        try {
+            $response = $httpClient->request('GET', "", [
+                'headers' => ['Authorization' => "Bearer $bearerToken"]
+            ]);
+        } catch (\GuzzleHttp\Exception\ClientException $exception) {
+            $response = $exception->getResponse();
+        } catch (\Exception $exception) {
+            throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, $exception->getMessage());
+        }
+    
+        $content = $response->getBody()->getContents();
+    
+        Log::debug("{$this->getClientName()}: Response from service provider", [
+            'response' => $content
+        ]);
+    
+        if ($response->getStatusCode() == 200) {
+    
+            $body = json_decode($content);
+            // the transaction exists in service provider system irrespective of status.
+            // waiting callback request from the provider with final status
+            return $body;
+        }
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE,
+            'Status verification returned non 2xx code');
+    }
+    
+    /**
+     * @param Account $account
      * @return bool
      * @throws BadRequestException
      * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function performTransaction(Account $account, $subscription, $performUrl, $key, $serviceCode)
+    public function performTransaction(Account $account)
     {
-        $token = $this->authenticate($key, "/$subscription/token/");
+        $bearerToken = $this->authenticate();
+        $performUrl = $this->config['url'] . "{$this->config['perform_uri']}";
         
         $json = [
             'amount'       => $account->getAmount(),
             'currency'     => 'XAF',
             'externalId'   => $account->getIntId(),
-            $subscription == 'collection' ? 'payer':'payee' => [
+            $this->config['subscription'] == 'collection' ? 'payer':'payee'  => [
                 'partyIdType' => 'MSISDN',
                 'partyId'     => $account->getAccountNumber(),
             ],
-            'payerMessage' => 'Corlang Limited',
-            'payeeNote'    => 'CorPay',
+            'payerMessage' => 'CorlangLimited',
+            'payeeNote'    => 'Thanks',
         ];
-        
+    
         Log::debug("{$this->getClientName()}: Sending purchase request to service provider", [
-            'json' => $json
+            'json' => $json,
+            'url' => $performUrl,
         ]);
     
-        $httpClient = $this->getHttpClient($key, $token);
+        $httpClient = $this->getHttpClient($performUrl);
         try {
-            $response = $httpClient->request('POST', $performUrl, [
+            $response = $httpClient->request('POST', "https://proxy.momoapi.mtn.com/collection/v1_0/requesttopay", [
                 'headers' => [
-                    'X-Callback-Url' => config('app.url') . '/callback/mtn',
-                    'X-Reference-Id' => $account->getIntId()
+                    'X-Reference-Id' => $account->getIntId(),
+                    'Authorization' => "Bearer $bearerToken"
                 ],
                 'json' => $json
             ]);
@@ -167,11 +286,11 @@ class MtnClient implements ClientInterface
         Log::debug("{$this->getClientName()}: Response from service provider", [
             'response' => $content
         ]);
-        
+        $body = json_decode($content);
+
         if ($response->getStatusCode() == 202) {
             return true;
-        } else {
-            $body = json_decode($content);
+        } else if (isset($body->code)){
             switch ($body->code) {
                 case "PAYEE_NOT_FOUND":
                     $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
@@ -185,74 +304,27 @@ class MtnClient implements ClientInterface
                 default:
                     $error_code = ErrorCodesConstants::GENERAL_CODE;
             }
+            throw new BadRequestException($error_code, $body->message);
         }
-        throw new BadRequestException($error_code, $body->message);
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'An unexpected error occured during purchase');
     }
     
     /**
-     * @param $transaction
-     * @param $subscription
-     * @param $performUrl
-     * @param $key
-     * @param $serviceCode
-     * @return bool
-     * @throws GeneralException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function verifyTransaction($transaction, $subscription, $performUrl, $key, $serviceCode)
-    {
-        $token = $this->authenticate($key, "/$subscription/token/");
-    
-        Log::debug("{$this->getClientName()}: Sending verification request to service provider", [
-            'transaction.id' => $transaction->id,
-            'status' => $transaction->status,
-            'destination' => $transaction->destination,
-            'service_code' => $transaction->service_code,
-            'internal_id' => $transaction->internal_id,
-        ]);
-    
-        $httpClient = $this->getHttpClient($key, $token);
-        try {
-            $response = $httpClient->request('GET', "$performUrl/$transaction->internal_id");
-        } catch (\GuzzleHttp\Exception\ClientException $exception) {
-            $response = $exception->getResponse();
-        } catch (\Exception $exception) {
-            throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, $exception->getMessage());
-        }
-    
-        $content = $response->getBody()->getContents();
-    
-        Log::debug("{$this->getClientName()}: Response from service provider", [
-            'response' => $content
-        ]);
-    
-        if ($response->getStatusCode() == 200) {
-            // the transaction exists in service provider system irrespective of status.
-            // waiting callback request from the provider with final status
-            return true;
-        }
-        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE,
-            'Status verification returned non 2xx code');
-        
-    }
-    
-    /**
-     * @param $key
-     * @param string $token
+     * @param $url
      * @return Client
      */
-    public function getHttpClient($key, $token = '')
+    public function getHttpClient($url)
     {
         return new Client([
-            'base_uri'        => config('app.services.mtn.url'),
+            'base_uri'        => $url,
             'timeout'         => 120,
             'connect_timeout' => 120,
             'allow_redirects' => true,
             'headers'         => [
-                'Authorization' => $token,
-                'X-Target-Environment' => config('app.services.mtn.environment'),
-                'Ocp-Apim-Subscription-Key' => $key,
-                'Content-Type' => 'application/json'
+                'X-Target-Environment' => $this->config['environment'],
+                'Ocp-Apim-Subscription-Key' => $this->config['subscription_key'],
+                'Content-Type' => 'application/json',
+                'X-Callback-Url' => $this->config['callback_url'],
             ],
         ]);
     }

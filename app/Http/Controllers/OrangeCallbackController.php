@@ -75,7 +75,7 @@ class OrangeCallbackController extends CallbackController
     
         $transaction->message = $request->input('message');
         
-        if ($request->input('status') == 'SUCCESSFULL') {
+        if ($request->input('status') == 'SUCCESSFULL' || $request->input('status') == 'SUCCESSFUL') {
             $transaction->status = TransactionConstants::SUCCESS;
         }
         

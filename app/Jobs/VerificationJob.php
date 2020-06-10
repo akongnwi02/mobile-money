@@ -45,7 +45,7 @@ class VerificationJob extends Job
      * Time to sleep for a transaction
      * @var int
      */
-    public $sleep = 5;
+    public $sleep = 8;
     
     /**
      * Create a new job instance.

@@ -11,12 +11,14 @@ namespace App\Services\Clients\Providers\Mtn;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
+use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 
 class MtnCashoutClient extends MtnClient
 {
-    public $subscription = 'collection';
-    public $performUrl = '/collection/v1_0/requesttopay';
+    
     /**
      * @param $accountNumber
      * @return Account
@@ -26,11 +28,7 @@ class MtnCashoutClient extends MtnClient
      */
     public function search($accountNumber): Account
     {
-        return parent::verifyNumber(
-            $accountNumber,
-            $this->subscription,
-            config('app.services.mtn.cashout_key'),
-            config('app.services.mtn.cashout_code'));
+        return parent::verifyNumber($accountNumber);
     }
     
     /**
@@ -42,12 +40,7 @@ class MtnCashoutClient extends MtnClient
      */
     public function buy(Account $account): bool
     {
-        return parent::performTransaction(
-            $account,
-            $this->subscription,
-            $this->performUrl,
-            config('app.services.mtn.cashout_key'),
-            config('app.services.mtn.cashout_code'));
+        return parent::performTransaction($account);
     }
     
     /**
@@ -55,19 +48,10 @@ class MtnCashoutClient extends MtnClient
      * @return bool
      * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
      */
     public function status($transaction)
     {
-        return parent::verifyTransaction(
-            $transaction,
-            $this->subscription,
-            $this->performUrl,
-            config('app.services.mtn.cashout_key'),
-            config('app.services.mtn.cashout_code'));
-    }
-    
-    public function getClientName(): string
-    {
-        return class_basename($this);
+        return parent::verifyTransaction($transaction);
     }
 }

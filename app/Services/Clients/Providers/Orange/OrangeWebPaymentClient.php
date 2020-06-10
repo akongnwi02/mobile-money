@@ -65,7 +65,7 @@ class OrangeWebPaymentClient extends OrangeClient
             'subscriberMsisdn'  => substr($account->getAccountNumber(), -9),
             'pin'               => config('app.services.orange.webpayment_channel_pin'),
             /*
-             * Warning!!!! Sending only the first twenty characters of the transaction uuid. As Orange only supports the first 20
+             * Warning!!!! Sending only the first twenty characters of the transaction uuid. As Orange only supports 20 chars
              */
             'orderId'           => substr($account->getIntId(), 0, 20),
             'description'       => 'Corlang Account Top Up',
@@ -153,12 +153,13 @@ class OrangeWebPaymentClient extends OrangeClient
     public function finalStatus($transaction)
     {
         $status = $this->getStatus($transaction);
-        if ($status == 'SUCCESSFULL') {
+        if ($status == 'SUCCESSFULL' || $status == 'SUCCESSFUL') {
             return true;
         } else if (in_array($status, [
             'FAILED',
             'EXPIRED',
             'CANCELLED',
+            'CANCELED',
         ])) {
             return false;
         } else {

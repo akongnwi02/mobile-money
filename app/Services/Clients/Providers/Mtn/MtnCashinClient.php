@@ -15,9 +15,6 @@ use App\Services\Objects\Account;
 
 class MtnCashinClient extends MtnClient
 {
-    public $subscription = 'remittance';
-    public $performUrl = '/remittance/v1_0/transfer';
-    
     /**
      * @param $accountNumber
      * @return Account
@@ -27,11 +24,7 @@ class MtnCashinClient extends MtnClient
      */
     public function search($accountNumber): Account
     {
-        return parent::verifyNumber(
-            $accountNumber,
-            $this->subscription,
-            config('app.services.mtn.cashin_key'),
-            config('app.services.mtn.cashin_code'));
+        return parent::verifyNumber($accountNumber);
     }
     
     /**
@@ -43,10 +36,7 @@ class MtnCashinClient extends MtnClient
      */
     public function buy(Account $account): bool
     {
-        return parent::performTransaction($account,
-            $this->subscription, $this->performUrl,
-            config('app.services.mtn.cashin_key'),
-            config('app.services.mtn.cashin_code'));
+        return parent::performTransaction($account);
     }
     
     /**
@@ -54,18 +44,10 @@ class MtnCashinClient extends MtnClient
      * @return bool
      * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
      */
     public function status($transaction)
     {
-        return parent::verifyTransaction(
-            $transaction, $this->subscription,
-            $this->performUrl,
-            config('app.services.mtn.cashin_key'),
-            config('app.services.mtn.cashin_code'));
-    }
-    
-    public function getClientName(): string
-    {
-        return class_basename($this);
+        return parent::verifyTransaction($transaction);
     }
 }
