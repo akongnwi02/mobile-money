@@ -65,6 +65,7 @@ class VerificationJob extends Job
             'transaction.merchant_id' => $this->transaction->merchant_id,
             'transaction.external_id' => $this->transaction->external_id,
             'transaction.internal_id' => $this->transaction->internal_id,
+            'transaction.stats'       => $this->transaction->status,
             'transaction.amount'      => $this->transaction->amount,
         ]);
         
@@ -102,7 +103,7 @@ class VerificationJob extends Job
             $this->transaction->message = 'Final status decided by the verification manager job';
             $this->transaction->save();
             
-            Log::info("{$this->getJobName()}: Final status received by verification worker, inserting transaction to callback queue", [
+            Log::info("{$this->getJobName()}: Final status received by verification worker, inserting transaction to CALLBACK queue", [
                 'status'         => $this->transaction->status,
                 'transaction.id' => $this->transaction->id,
                 'destination'    => $this->transaction->destination,

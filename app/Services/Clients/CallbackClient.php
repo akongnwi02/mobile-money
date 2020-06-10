@@ -28,6 +28,7 @@ class CallbackClient
             'error_code'     => $transaction->error_code,
             'message'        => $transaction->message,
             'to_be_verified' => $transaction->to_be_verified,
+            'asset'          => $transaction->merchant_id
         ];
     
         Log::debug("{$this->getClientName()}: Sending callback request", [
