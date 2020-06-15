@@ -33,6 +33,7 @@ class CallbackClient
     
         Log::debug("{$this->getClientName()}: Sending callback request", [
             'url'  => $transaction->callback_url,
+            'transaction.uuid' => $transaction->internal_id,
             'json' => $json
     
         ]);

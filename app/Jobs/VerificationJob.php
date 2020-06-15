@@ -39,7 +39,7 @@ class VerificationJob extends Job
      * Number of retries
      * @var int
      */
-    public $tries = 50;
+    public $tries = 75;
     
     /**
      * Time to sleep for a transaction

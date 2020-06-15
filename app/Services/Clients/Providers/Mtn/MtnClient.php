@@ -102,7 +102,7 @@ class MtnClient implements ClientInterface
         
         $basicAuth = base64_encode($this->config['user'] . ':' . $this->config['password']);
         
-        Log::debug("{$this->getClientName()}: Generating new authorization token for {$this->config['subscription']}", [
+        Log::debug("{$this->getClientName()}: Generating new authorization token for {$this->config['subscription']} api", [
             'url' => $url
         ]);
         
@@ -300,6 +300,9 @@ class MtnClient implements ClientInterface
                     break;
                 case "PAYEE_NOT_ALLOWED_TO_RECEIVE":
                     $error_code = ErrorCodesConstants::SUBSCRIBER_CANNOT_PERFORM;
+                    break;
+                case "PAYER_LIMIT_REACHED":
+                    $error_code = ErrorCodesConstants::CUSTOMER_ACCOUNT_LIMIT;
                     break;
                 default:
                     $error_code = ErrorCodesConstants::GENERAL_CODE;

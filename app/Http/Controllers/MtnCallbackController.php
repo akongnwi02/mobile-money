@@ -60,7 +60,7 @@ class MtnCallbackController extends CallbackController
             TransactionConstants::SUCCESS,
             TransactionConstants::FAILED,
         ])) {
-            Log::emergency("{$this->getClassName()}: Transaction in final status received a status update",[
+            Log::warning("{$this->getClassName()}: Transaction in final status received a status update",[
                 'transaction.status'                => $transaction->status,
                 'transaction.internal_id'           => $transaction->internal_id,
                 'transaction.id'                    => $transaction->id,
@@ -68,8 +68,35 @@ class MtnCallbackController extends CallbackController
                 'transaction.created_at'            => $transaction->created_at->toDatetimeString(),
                 'transaction.destination'           => $transaction->destination,
             ]);
-            throw new GeneralException(ErrorCodesConstants::TRANSACTION_IN_FINAL_STATUS, "Transaction $transaction->internal_id is already in final status $transaction->status");
-        };
+            if ($transaction->status == TransactionConstants::SUCCESS) {
+                if ($request->input('status') == 'SUCCESSFUL') {
+                    return $this->successResponse();
+                }
+            } else if ($transaction->status == TransactionConstants::FAILED) {
+                if (in_array($request->input('status'), [
+                    // Guessing possible status as documentation is not proper
+                    'FAILED',
+                    'EXPIRED',
+                    'CANCELLED',
+                    'CANCELED',
+                    // GUESS WORK
+                    'ABORTED',
+                    'DELETED',
+                    'TERMINATED',
+                ])) {
+                    return $this->successResponse();
+                }
+            }
+            Log::emergency("{$this->getClassName()}: Transaction in final status received a status mismatch update",[
+                'transaction.status'                => $transaction->status,
+                'transaction.internal_id'           => $transaction->internal_id,
+                'transaction.id'                    => $transaction->id,
+                'transaction.service_code'          => $transaction->service_code,
+                'transaction.created_at'            => $transaction->created_at->toDatetimeString(),
+                'transaction.destination'           => $transaction->destination,
+            ]);
+            throw new GeneralException(ErrorCodesConstants::TRANSACTION_IN_FINAL_STATUS, "Transaction $transaction->internal_id is already in final status $transaction->status. There was a status mismatch");
+        }
         
         $transaction->message = 'Transaction status updated via callback';
         $transaction->merchant_id = $request->input('financialTransactionId');
