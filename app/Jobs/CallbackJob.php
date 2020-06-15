@@ -22,7 +22,7 @@ class CallbackJob extends Job
      * Number of retries
      * @var int
      */
-    public $tries = 50;
+    public $tries = 10;
     
     /**
      * Timeout
