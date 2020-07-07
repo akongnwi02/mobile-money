@@ -44,7 +44,7 @@ class OrangeCallbackController extends CallbackController
                 'payload' => $request->input()
             ]);
     
-            throw new NotFoundException(ErrorCodesConstants::TRANSACTION_NOT_FOUND, "The transaction {$request->input('status')} does not exist in our system");
+            throw new NotFoundException(ErrorCodesConstants::TRANSACTION_NOT_FOUND, "The transaction {$request->input('payToken')} does not exist in our system");
         }
     
         $transactionInLocalDb = [
@@ -62,7 +62,37 @@ class OrangeCallbackController extends CallbackController
             TransactionConstants::SUCCESS,
             TransactionConstants::FAILED,
         ])) {
-            Log::emergency("{$this->getClassName()}: Transaction in final status received a status update",[
+            Log::warning("{$this->getClassName()}: Transaction in final status $transaction->status received a status update of {$request->input('status')}",[
+                'transaction.status'                => $transaction->status,
+                'transaction.internal_id'           => $transaction->internal_id,
+                'transaction.id'                    => $transaction->id,
+                'transaction.service_code'          => $transaction->service_code,
+                'transaction.created_at'            => $transaction->created_at->toDatetimeString(),
+                'transaction.destination'           => $transaction->destination,
+            ]);
+    
+            if ($transaction->status == TransactionConstants::SUCCESS) {
+                if ($request->input('status') == 'SUCCESSFULL' || $request->input('status') == 'SUCCESSFUL') {
+                    return $this->successResponse();
+                }
+            } else if ($transaction->status == TransactionConstants::FAILED) {
+                if (in_array($request->input('status'), [
+                    // Guessing possible status as documentation is not proper
+                    'FAILED',
+                    'EXPIRED',
+                    'CANCELLED',
+                    'CANCELED',
+                    'ERROR',
+                    'ERRORED',
+                    // GUESS WORK
+                    'ABORTED',
+                    'DELETED',
+                    'TERMINATED',
+                ])) {
+                    return $this->successResponse();
+                }
+            }
+            Log::emergency("{$this->getClassName()}: Transaction in final status $transaction->status received a status mismatch of {$request->input('status')}",[
                 'transaction.status'                => $transaction->status,
                 'transaction.internal_id'           => $transaction->internal_id,
                 'transaction.id'                    => $transaction->id,

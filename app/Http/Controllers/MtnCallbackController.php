@@ -60,7 +60,7 @@ class MtnCallbackController extends CallbackController
             TransactionConstants::SUCCESS,
             TransactionConstants::FAILED,
         ])) {
-            Log::warning("{$this->getClassName()}: Transaction in final status received a status update",[
+            Log::warning("{$this->getClassName()}: Transaction in final status $transaction->status received a status update of {$request->input('status')}",[
                 'transaction.status'                => $transaction->status,
                 'transaction.internal_id'           => $transaction->internal_id,
                 'transaction.id'                    => $transaction->id,
@@ -87,7 +87,7 @@ class MtnCallbackController extends CallbackController
                     return $this->successResponse();
                 }
             }
-            Log::emergency("{$this->getClassName()}: Transaction in final status received a status mismatch update",[
+            Log::emergency("{$this->getClassName()}: Transaction in final status $transaction->status received a status mismatch of {$request->input('status')}",[
                 'transaction.status'                => $transaction->status,
                 'transaction.internal_id'           => $transaction->internal_id,
                 'transaction.id'                    => $transaction->id,
