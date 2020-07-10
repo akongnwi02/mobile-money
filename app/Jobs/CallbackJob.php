@@ -60,7 +60,7 @@ class CallbackJob extends Job
          * Make sure we don't send callback for a transaction which was previously sent
          */
         if ($this->transaction->is_callback_sent) {
-            Log::emergency("{$this->getJobName()}: Trying to re-send callback for a transaction which was previously sent", [
+            Log::warning("{$this->getJobName()}: Trying to re-send callback for a transaction which was previously sent", [
                 'transaction.status'                => $this->transaction->status,
                 'transaction.id'                    => $this->transaction->id,
                 'transaction.destination'           => $this->transaction->destination,
