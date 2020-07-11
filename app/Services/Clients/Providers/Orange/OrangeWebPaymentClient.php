@@ -96,7 +96,7 @@ class OrangeWebPaymentClient extends OrangeClient
             $response = $exception->getResponse();
         } catch (\Exception $exception) {
             throw new GeneralException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
-                'Error connecting to service provider to verify account: ' . $exception->getMessage());
+                'Unexpected error initiating payment with service provider: ' . $exception->getMessage());
         }
         
         $content = $response->getBody()->getContents();
