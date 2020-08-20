@@ -44,13 +44,19 @@ class Handler extends ExceptionHandler
             $error['code']    = 400;
             $error['error_code'] = ErrorCodesConstants::INVALID_INPUTS;
         }
-        
+    
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
             $error['message'] = 'Method Not Allowed';
             $error['code']    = 405;
             $error['error_code'] = ErrorCodesConstants::METHOD_NOT_ALLOWED;
         }
-
+    
+        if ($exception instanceof BadRequestException) {
+            $error['message'] = $exception->getMessage();
+            $error['code']    = $exception->status();
+            $error['error_code'] = $exception->error_code();
+        }
+    
         if ($exception instanceof NotFoundException) {
             $error['message'] = $exception->getMessage();
             $error['error_code']  = $exception->error_code();

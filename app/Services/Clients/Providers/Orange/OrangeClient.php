@@ -33,11 +33,12 @@ class OrangeClient implements ClientInterface
      * @return Account
      * @throws BadRequestException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GeneralException
      */
     public function search($accountNumber): Account
     {
         $msisdn = substr($accountNumber, -9);
-        $searchUrl = $this->config['url'] . "infos/subscriber/user/$msisdn";
+        $searchUrl = $this->config['url'] . "infos/subscriber/customer/$msisdn";
         Log::debug("{$this->getClientName()}: Sending request to service provider to search for user account", ['url' => $searchUrl]);
     
         $httpClient = $this->getHttpClient($searchUrl);
@@ -52,10 +53,11 @@ class OrangeClient implements ClientInterface
             ]);
         } catch (ClientException $exception) {
             Log::error('Error sending search request to service provider: ' . $exception->getMessage());
-            throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
-                'Error sending init request to service provider: ' . $exception->getMessage());
+            $response = $exception->getResponse();
+        } catch (\Exception $exception) {
+            throw new GeneralException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR, 'Error connecting to service provider: ' . $exception->getMessage());
         }
-    
+        
         $content = $response->getBody()->getContents();
     
         Log::debug("{$this->getClientName()}: Response from service provider", [
@@ -64,7 +66,13 @@ class OrangeClient implements ClientInterface
     
         $body = json_decode($content);
         
-        $account = new Account();
+        if ($response->getStatusCode() == 200) {
+            $account = new Account();
+            $account->setName(join(' ', [@$body->data->firstName, @$body->data->lastName]));
+            return $account;
+        } else {
+            throw new BadRequestException(ErrorCodesConstants::SUBSCRIBER_NOT_FOUND, "Error searching the subscriber");
+        }
     }
     
     /**
