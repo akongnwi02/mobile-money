@@ -9,27 +9,287 @@
 namespace App\Services\Clients\Providers\Orange;
 
 
+use App\Exceptions\BadRequestException;
+use App\Exceptions\GeneralException;
+use App\Models\Transaction;
 use App\Services\Clients\ClientInterface;
+use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Log;
 
 class OrangeClient implements ClientInterface
 {
+    public $config;
+    
+    public function __construct($config)
+    {
+        $this->config = $config;
+    }
     
     /**
      * @param $accountNumber
      * @return Account
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function search($accountNumber): Account
     {
-        throw new \BadMethodCallException('Method not implemented');
+        $msisdn = substr($accountNumber, -9);
+        $searchUrl = $this->config['url'] . "infos/subscriber/user/$msisdn";
+        Log::debug("{$this->getClientName()}: Sending request to service provider to search for user account", ['url' => $searchUrl]);
+    
+        $httpClient = $this->getHttpClient($searchUrl);
+        
+        $json = [
+            'channelMsisdn' => $this->config['channel_msisdn'],
+            'pin'           => $this->config['pin'],
+        ];
+        try {
+            $response = $httpClient->request('POST', '', [
+                'json' => $json
+            ]);
+        } catch (ClientException $exception) {
+            Log::error('Error sending search request to service provider: ' . $exception->getMessage());
+            throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
+                'Error sending init request to service provider: ' . $exception->getMessage());
+        }
+    
+        $content = $response->getBody()->getContents();
+    
+        Log::debug("{$this->getClientName()}: Response from service provider", [
+            'response' => $content
+        ]);
+    
+        $body = json_decode($content);
+        
+        $account = new Account();
     }
     
     /**
      * @param Account $account
      * @return bool
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GeneralException
      */
     public function buy(Account $account): bool
     {
-        // TODO: Implement buy() method.
+        $payTokenUrl = $this->config['url'] . $this->config['subscription'] . '/init';
+        
+        Log::debug("{$this->getClientName()}: Sending request to service provider to generate payToken", ['url' => $payTokenUrl]);
+    
+        $payTokenClient = $this->getHttpClient($payTokenUrl);
+        try {
+            $payTokenResponse = $payTokenClient->request('POST');
+        } catch (\Exception $exception) {
+            Log::emergency('Error sending init request to service provider: ' . $exception->getMessage());
+            throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
+                'Error sending init request to service provider: ' . $exception->getMessage());
+        }
+    
+        $content = $payTokenResponse->getBody()->getContents();
+    
+        Log::debug("{$this->getClientName()}: Response from service provider", [
+            'response' => $content
+        ]);
+    
+        $body = json_decode($content);
+    
+        try {
+            $payToken = $body->data->payToken;
+        
+            $transaction = Transaction::where('internal_id', $account->getIntId())->first();
+            $transaction->merchant_id = $payToken;
+            $transaction->save();
+        
+        } catch (\Exception $exception) {
+            Log::emergency("{$this->getClientName()}: Error retrieving pay token from response");
+            throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, $exception->getMessage());
+        }
+    
+        $json = [
+            'notifUrl'          => $this->config['callback_url'],
+            'channelUserMsisdn' => $this->config['channel_msisdn'],
+            'amount'            => "{$account->getAmount()}",
+            'subscriberMsisdn'  => substr($account->getAccountNumber(), -9),
+            'pin'               => $this->config['pin'],
+            /*
+             * Warning!!!! Sending only the first twenty characters of the transaction uuid. As Orange only supports 20 chars
+             */
+            'orderId'           => substr($account->getIntId(), 0, 20),
+            'description'       => 'Corlang Account Top Up',
+            'payToken'          => $payToken,
+        ];
+    
+        $payUrl = $this->config['url'] . $this->config['subscription'] . '/pay';
+        
+        Log::debug("{$this->getClientName()}: Sending request to service provider to initiate payment", [
+            'json' => $json,
+            'url' => $payUrl
+        ]);
+    
+        $paymentClient = $this->getHttpClient($payUrl);
+        try {
+            $paymentResponse = $paymentClient->request('POST', '', [
+                'json' => $json
+            ]);
+        
+            // Push to customer if request was successful
+            // not serious if request fails.
+            // User can manually open transaction
+            // by dialing code on his phone to confirm transaction
+            // do this only if the service is a merchant payment service
+            if ($this->config['subscription'] == 'mp') {
+                try {
+    
+//                    $paymentClient->request('GET', "mp/push/$payToken");
+                    
+                    $pushUrl  = $this->config['url'] . $this->config['subscription'] . "/push/$payToken";
+
+                    $pushClient = $this->getHttpClient($pushUrl);
+                    $pushClient->request('GET');
+                    Log::info("{$this->getClientName()}: Transaction pushed to customer for confirmation successfully");
+                } catch (\ Exception $exception) {
+                    Log::warning("{$this->getClientName()}: Error pushing transaction to customer", ['message' => $exception->getMessage()]);
+                }
+            }
+            
+        } catch (\GuzzleHttp\Exception\ClientException $exception) {
+            Log::error("{$this->getClientName()}: An error occurred when sending payment request");
+            $paymentResponse = $exception->getResponse();
+        } catch (\Exception $exception) {
+            throw new GeneralException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
+                'Unexpected error initiating payment with service provider: ' . $exception->getMessage());
+        }
+    
+        $content = $paymentResponse->getBody()->getContents();
+    
+        Log::debug("{$this->getClientName()}: Response from service provider", [
+            'response' => $content
+        ]);
+    
+        if ($paymentResponse->getStatusCode() == 200) {
+            return true;
+        } else {
+            $body = json_decode($content);
+            $code = $body->data->inittxnstatus;
+            switch ($code) {
+                case '00671': // FAKE NUMBER NOT IN ORANGE
+                    $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
+                    break;
+                case '99051': // NUMBER IN ORANGE BUT NOT ORANGE MONEY
+                    $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
+                    break;
+                case '60019': // BALANCE CROSSED
+                    $error_code = ErrorCodesConstants::INSUFFICIENT_FUNDS_IN_WALLET;
+                    break;
+                default:
+                    $error_code = ErrorCodesConstants::GENERAL_CODE;
+            }
+            throw new BadRequestException($error_code, $body->message);
+        }
+    }
+    
+    /**
+     * @param $transaction
+     * @return bool
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function status($transaction)
+    {
+        $status = $this->getStatus($transaction);
+    
+        Log::info("{$this->getClientName()}: Transaction exists in partner system with status $status");
+        if (strtoupper($status) == 'PENDING') {
+            return true;
+        }
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a reliable state. We expect to have the status \'PENDING\'');
+    }
+    
+    /**
+     * @param $transaction
+     * @return mixed
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getStatus($transaction)
+    {
+        $statusUrl = $this->config['url'] . $this->config['subscription'] . "/paymentstatus/$transaction->merchant_id";
+        
+        Log::debug("{$this->getClientName()}: Sending request to service provider to get status", ['url' => $statusUrl]);
+        
+        $httpClient = $this->getHttpClient($statusUrl);
+        try {
+            $response = $httpClient->request('GET');
+        } catch (\Exception $exception) {
+            Log::emergency('Error sending init request to service provider: ' . $exception->getMessage());
+            throw new GeneralException(ErrorCodesConstants::GENERAL_CODE,
+                'Service provider error: ' . $exception->getMessage());
+        }
+        
+        $content = $response->getBody()->getContents();
+        
+        Log::debug("{$this->getClientName()}: Response from service provider", [
+            'response' => $content
+        ]);
+        
+        $body = json_decode($content);
+        
+        return $body->data->status;
+    }
+    
+    /**
+     * @param $transaction
+     * @return bool
+     * @throws GeneralException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function finalStatus($transaction)
+    {
+        $status = $this->getStatus($transaction);
+        if ($status == 'SUCCESSFULL' || $status == 'SUCCESSFUL') {
+            return true;
+        } else if (in_array($status, [
+            'FAILED',
+            'EXPIRED',
+            'CANCELLED',
+            'CANCELED',
+        ])) {
+            return false;
+        } else {
+            throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not a final status');
+        }
+    }
+    
+    public function getClientName()
+    {
+        return class_basename($this);
+    }
+    
+    /**
+     * @return Client
+     * @param $url
+     */
+    public function getHttpClient($url)
+    {
+        $oauthToken = $this->config['token'];
+        $xauthToken = base64_encode($this->config['username'] . ':' . $this->config['password']);
+        
+        return new Client([
+            'base_uri'        => $url,
+            'timeout'         => 120,
+            'connect_timeout' => 120,
+            'allow_redirects' => true,
+            'verify'          => false,
+            'headers'         => [
+                'Authorization' => "Bearer $oauthToken",
+                'X-AUTH-TOKEN'  => $xauthToken,
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+            ],
+        ]);
     }
 }

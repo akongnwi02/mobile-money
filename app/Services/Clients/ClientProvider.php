@@ -32,13 +32,25 @@ trait ClientProvider
         }
         switch ($serviceCode) {
             case config('app.services.orange.webpayment_code'):
-                return new OrangeWebPaymentClient();
+                $config['subscription']   = 'mp';
+                $config['url']            = config('app.services.orange.webpayment_url');
+                $config['service_code']   = config('app.services.orange.webpayment_code');
+                $config['callback_url']   = config('app.url') . '/callback/orange/wp';
+                $config['channel_msisdn'] = config('app.services.orange.webpayment_channel_msisdn');
+                $config['pin']            = config('app.services.orange.webpayment_channel_pin');
+                $config['token']          = config('app.services.orange.webpayment_token');
+                $config['username']       = config('app.services.orange.webpayment_api_username');
+                $config['password']       = config('app.services.orange.webpayment_api_password');
+                return new OrangeWebPaymentClient($config);
                 break;
+            
             case config('app.services.orange.cashin_code'):
-                return new OrangeCashinClient();
+                $config['subscription']   = 'cashin';
+                return new OrangeCashinClient($config);
                 break;
             case config('app.services.orange.cashout_code'):
-                return new OrangeCashoutClient();
+                $config['subscription']   = 'cashout';
+                return new OrangeCashoutClient($config);
                 break;
             case config('app.services.express_union.cashin_code'):
                 return new ExpressUnionCashinClient();
@@ -46,34 +58,34 @@ trait ClientProvider
             case config('app.services.express_union.cashout_code'):
                 return new ExpressUnionCashoutClient();
                 break;
-                
+            
             case config('app.services.mtn.cashout_code'):
-                $config['url'] = config('app.services.mtn.url');
-                $config['environment'] = config('app.services.mtn.environment');
-                $config['callback_url'] = $callbackUrl = config('app.url') . '/callback/mtn';
-                $config['subscription'] = 'collection';
+                $config['url']              = config('app.services.mtn.url');
+                $config['environment']      = config('app.services.mtn.environment');
+                $config['callback_url']     = config('app.url') . '/callback/mtn';
+                $config['subscription']     = 'collection';
                 $config['subscription_key'] = config('app.services.mtn.cashout_key');
-                $config['user'] = config('app.services.mtn.cashout_user');
-                $config['password'] = config('app.services.mtn.cashout_password');
-                $config['perform_uri'] = '/collection/v1_0/requesttopay';
-                $config['service_code'] = config('app.services.mtn.cashout_code');
+                $config['user']             = config('app.services.mtn.cashout_user');
+                $config['password']         = config('app.services.mtn.cashout_password');
+                $config['perform_uri']      = '/collection/v1_0/requesttopay';
+                $config['service_code']     = config('app.services.mtn.cashout_code');
                 return new MtnCashoutClient($config);
-                
+            
             case  config('app.services.mtn.cashin_code'):
-                $config['url'] = config('app.services.mtn.url');
-                $config['environment'] = config('app.services.mtn.environment');
-                $config['callback_url'] = $callbackUrl = config('app.url') . '/callback/mtn';
-                $config['subscription'] = 'remittance';
+                $config['url']              = config('app.services.mtn.url');
+                $config['environment']      = config('app.services.mtn.environment');
+                $config['callback_url']     = config('app.url') . '/callback/mtn';
+                $config['subscription']     = 'remittance';
                 $config['subscription_key'] = config('app.services.mtn.cashin_key');
-                $config['user'] = config('app.services.mtn.cashin_user');
-                $config['password'] = config('app.services.mtn.cashin_password');
-                $config['perform_uri'] = '/remittance/v1_0/transfer';
-                $config['status_uri'] = '';
-                $config['service_code'] = config('app.services.mtn.cashin_code');
+                $config['user']             = config('app.services.mtn.cashin_user');
+                $config['password']         = config('app.services.mtn.cashin_password');
+                $config['perform_uri']      = 'remittance/v1_0/transfer';
+                $config['status_uri']       = '';
+                $config['service_code']     = config('app.services.mtn.cashin_code');
                 return new MtnCashinClient($config);
-                
+            
             default:
-                throw new GeneralException(ErrorCodesConstants::SERVICE_NOT_FOUND,'Unknown Micro Service');
+                throw new GeneralException(ErrorCodesConstants::SERVICE_NOT_FOUND, 'Unknown Micro Service');
         }
     }
 }

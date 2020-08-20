@@ -16,7 +16,6 @@ use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
-use mysql_xdevapi\Exception;
 
 class MtnClient implements ClientInterface
 {
@@ -145,7 +144,7 @@ class MtnClient implements ClientInterface
         $body = $this->getStatus($transaction);
         $status = $body->status;
         if ($status == 'SUCCESSFUL') {
-            $transaction->merchant_id = $body->financialTransactionId;
+            $transaction->merchant_id = @$body->financialTransactionId;
             $transaction->save();
             return true;
         } else if (in_array($status, [
@@ -159,7 +158,7 @@ class MtnClient implements ClientInterface
             'DELETED',
             'TERMINATED',
         ])) {
-            $transaction->merchant_id = $body->financialTransactionId;
+            $transaction->merchant_id = @$body->financialTransactionId;
             $transaction->save();
             return false;
         } else {
@@ -265,7 +264,7 @@ class MtnClient implements ClientInterface
     
         $httpClient = $this->getHttpClient($performUrl);
         try {
-            $response = $httpClient->request('POST', "https://proxy.momoapi.mtn.com/collection/v1_0/requesttopay", [
+            $response = $httpClient->request('POST', '', [
                 'headers' => [
                     'X-Reference-Id' => $account->getIntId(),
                     'Authorization' => "Bearer $bearerToken"
