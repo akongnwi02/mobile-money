@@ -58,7 +58,8 @@ class PurchaseJob extends Job
         Log::info("{$this->getJobName()}: Processing new purchase job", [
             'status'         => $this->transaction->status,
             'transaction.id' => $this->transaction->id,
-            'destination'    => $this->transaction->destination
+            'destination'    => $this->transaction->destination,
+            'service_code'   => $this->transaction->service_code,
         ]);
         $this->transaction->status            = TransactionConstants::PROCESSING;
         $this->transaction->purchase_attempts = $this->attempts();

@@ -46,8 +46,17 @@ trait ClientProvider
             
             case config('app.services.orange.cashin_code'):
                 $config['subscription']   = 'cashin';
+                $config['url']            = config('app.services.orange.webpayment_url');
+                $config['service_code']   = config('app.services.orange.cashin_code');
+                $config['callback_url']   = config('app.url') . '/callback/orange/wp';
+                $config['channel_msisdn'] = config('app.services.orange.webpayment_channel_msisdn');
+                $config['pin']            = config('app.services.orange.webpayment_channel_pin');
+                $config['token']          = config('app.services.orange.webpayment_token');
+                $config['username']       = config('app.services.orange.webpayment_api_username');
+                $config['password']       = config('app.services.orange.webpayment_api_password');
                 return new OrangeCashinClient($config);
                 break;
+                
             case config('app.services.orange.cashout_code'):
                 $config['subscription']   = 'cashout';
                 return new OrangeCashoutClient($config);

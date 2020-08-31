@@ -65,6 +65,7 @@ seed:
 
 clear:
 	docker exec $$(docker-compose ps -q workspace) sh -c "truncate -s 0 storage/logs/*.log"
+	echo 'Log files emptied'
 
 deploy:
 	git push heroku develop:master

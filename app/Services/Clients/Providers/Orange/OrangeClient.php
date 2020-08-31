@@ -120,14 +120,15 @@ class OrangeClient implements ClientInterface
         $json = [
             'notifUrl'          => $this->config['callback_url'],
             'channelUserMsisdn' => $this->config['channel_msisdn'],
-            'amount'            => "{$account->getAmount()}",
+            'amount'            => (float)"{$account->getAmount()}",
             'subscriberMsisdn'  => substr($account->getAccountNumber(), -9),
             'pin'               => $this->config['pin'],
             /*
              * Warning!!!! Sending only the first twenty characters of the transaction uuid. As Orange only supports 20 chars
+             * Replace also (-) with (.) as the orange platform does not support the (-) character
              */
-            'orderId'           => substr($account->getIntId(), 0, 20),
-            'description'       => 'Corlang Account Top Up',
+            'orderId'           => str_replace('-', 'a', substr($account->getIntId(), 0, 20)),
+            'description'       => 'Transaction on CorlaPay platform',
             'payToken'          => $payToken,
         ];
     
@@ -182,7 +183,7 @@ class OrangeClient implements ClientInterface
             return true;
         } else {
             $body = json_decode($content);
-            $code = $body->data->inittxnstatus;
+            $code = @$body->data->inittxnstatus;
             switch ($code) {
                 case '00671': // FAKE NUMBER NOT IN ORANGE
                     $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
