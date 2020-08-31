@@ -183,7 +183,7 @@ class OrangeClient implements ClientInterface
             return true;
         } else {
             $body = json_decode($content);
-            $code = @$body->data->inittxnstatus;
+            $code = $this->config['subscription'] == 'cashin' ? @$body->data->txnstatus : @$body->data->inittxnstatus;
             switch ($code) {
                 case '00671': // FAKE NUMBER NOT IN ORANGE
                     $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
