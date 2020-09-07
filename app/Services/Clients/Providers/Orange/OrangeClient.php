@@ -120,7 +120,7 @@ class OrangeClient implements ClientInterface
         $json = [
             'notifUrl'          => $this->config['callback_url'],
             'channelUserMsisdn' => $this->config['channel_msisdn'],
-            'amount'            => (float)"{$account->getAmount()}",
+            'amount'            => "{$account->getAmount()}",
             'subscriberMsisdn'  => substr($account->getAccountNumber(), -9),
             'pin'               => $this->config['pin'],
             /*
