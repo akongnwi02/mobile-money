@@ -11,10 +11,12 @@ namespace App\Services\Clients\Providers\Orange;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
+use App\Models\Authentication;
 use App\Models\Transaction;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
@@ -153,8 +155,6 @@ class OrangeClient implements ClientInterface
             if ($this->config['subscription'] == 'mp') {
                 try {
     
-//                    $paymentClient->request('GET', "mp/push/$payToken");
-                    
                     $pushUrl  = $this->config['url'] . $this->config['subscription'] . "/push/$payToken";
 
                     $pushClient = $this->getHttpClient($pushUrl);
@@ -206,6 +206,7 @@ class OrangeClient implements ClientInterface
      * @return bool
      * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
      */
     public function status($transaction)
     {
@@ -223,6 +224,7 @@ class OrangeClient implements ClientInterface
      * @return mixed
      * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
      */
     public function getStatus($transaction)
     {
@@ -255,6 +257,7 @@ class OrangeClient implements ClientInterface
      * @return bool
      * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws BadRequestException
      */
     public function finalStatus($transaction)
     {
@@ -279,12 +282,111 @@ class OrangeClient implements ClientInterface
     }
     
     /**
-     * @return Client
+     * @return mixed
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getAccessToken()
+    {
+        $auth = Authentication::where('service_code', $this->config['service_code'])->latest()->get()->first();
+    
+        if ($auth && (Carbon::now()->diffInSeconds($auth->created_at) < $auth->expires_in)) {
+            Log::debug("{$this->getClientName()}: Valid OAuth token found for service: {$this->config['service_code']}", [
+                'expires_in' => $auth->expires_in,
+                'created_at' => $auth->created_at->toDateTimeString(),
+                'current_time' => Carbon::now()->toDateTimeString(),
+            ]);
+            return $auth->access_token;
+        }
+    
+        Log::debug("{$this->getClientName()}: No valid access token found locally. Connecting to service provider to generate new one", [
+            'service' => $this->config['service_code']
+        ]);
+    
+        return $this->generateNewAccessToken();
+    }
+    
+    /**
+     * @return mixed
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function generateNewAccessToken()
+    {
+       $base64String = base64_encode($this->config['key'] . ':' . $this->config['secret']);
+    
+        $url = $this->config['auth_url'] . "token";
+    
+        Log::debug("{$this->getClientName()}: Generating new authorization token for {$this->config['service_code']}", [
+            'url' => $url,
+            'key' => $this->config['key']
+        ]);
+    
+        $accessTokenClient = new Client();
+    
+        try {
+            $response = $accessTokenClient->request('POST', $url, [
+                'timeout'         => 120,
+                'connect_timeout' => 120,
+                'allow_redirects' => true,
+                'verify'          => false,
+                'headers' => [
+                    'Authorization' => 'Basic ' . $base64String,
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'Accept' => 'application/json'
+                ],
+                'form_params' => [
+                    'grant_type' => 'client_credentials'
+                ]
+            ]);
+        } catch (\Exception $exception) {
+            Log::error("{$this->getClientName()}: Could not authenticate with service provider", [
+                'service_code' => $this->config['service_code'],
+                'error' => $exception->getMessage()
+            ]);
+            throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
+                'Error connecting to service provider to generate token: ' . $exception->getMessage());
+        }
+    
+        $content = $response->getBody()->getContents();
+    
+        Log::debug("{$this->getClientName()}: Response received from service provider (may be hidden for security)", [
+//            'response' => $content
+        ]);
+    
+        $body = json_decode($content);
+    
+        if (isset($body->access_token)) {
+            
+            // save and return access token
+            Authentication::create([
+                'expires_in' => $body->expires_in,
+                'access_token' => $body->access_token,
+                'refresh_token' => null,
+                'service_code' => $this->config['service_code'],
+                'type' => 'Bearer'
+            ]);
+            
+            Log::info("{$this->getClientName()}: Token Retrieved successfully");
+            
+            return $body->access_token;
+        }
+        
+        Log::emergency("{$this->getClientName()}: Cannot authenticate with service provider", ['service' => $this->config['service_code']]);
+        
+        throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
+    }
+    
+    
+    /**
      * @param $url
+     * @return Client
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getHttpClient($url)
     {
-        $oauthToken = $this->config['token'];
+        $oauthToken = $this->getAccessToken();
         $xauthToken = base64_encode($this->config['username'] . ':' . $this->config['password']);
         
         return new Client([

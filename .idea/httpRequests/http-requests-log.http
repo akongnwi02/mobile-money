@@ -1,0 +1,532 @@
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1421ddf4dd3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T124542.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1421ddf4dd3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T124327.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1421df4dd3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T124308.400.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1421df4dd3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T123509.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1421df4dd3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T122559.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "14214dd3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T122535.400.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "14214dd3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T122310.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "14214d3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T122304.400.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "14214d3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T121932.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "14214d3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T121610.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "14214d3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T121457.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1423f4d3fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T121429.201.json
+
+###
+
+POST https://apiw.orange.cm/token
+Content-Type: application/x-www-form-urlencoded
+
+<> 2020-10-15T121313.400.json
+
+###
+
+POST https://apiw.orange.cm/token
+Content-Type: application/json
+
+###
+
+POST https://apiw.orange.cm/token
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1423f43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T120905.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1423f43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T120649.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253ddfff43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T120504.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253ddff43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-15T120454.400.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253ddff43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T115333.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253dff43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T115137.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253dff43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T113549.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253df43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T113543.400.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253df43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T122805.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253df43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T122111.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "1253df43fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T121216.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "125343fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T121210.400.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "125343fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T121117.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "125343fd",
+  "amount": "1",
+  "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+<> 2020-10-14T120657.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "655458778",
+  "external_id": "125343fd"
+}
+
+<> 2020-10-14T120606.400.json
+
+###
+
+GET http://localhost:8084/ping
+
+<> 2020-10-14T120341.200.json
+
+###
+
+POST http://localhost:8084/execute
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEIN",
+  "amount": 200,
+  "destination": "653754334",
+  "external_id": "4454d543",
+  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
+}
+
+<> 2020-09-07T100610.201.json
+
+###
+
+POST http://localhost:8084/execute
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEIN",
+  "amount": 200,
+  "destination": "653754334",
+  "external_id": "4454d543",
+  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
+}
+
+<> 2020-09-07T100426.201.json
+
+###
+
+POST http://localhost:8084/execute
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEIN",
+  "amount": 200,
+  "destination": "653754334",
+  "external_id": "4454543",
+  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
+}
+
+<> 2020-09-07T100414.400.json
+
+###
+
+POST http://localhost:8084/execute
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEIN",
+  "amount": 200,
+  "destination": "653754334",
+  "external_id": "4454543",
+  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
+}
+
+<> 2020-09-07T100313.201.json
+
+###
+
+POST http://localhost:8084/execute
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEIN",
+  "amount": 200,
+  "destination": "653754334",
+  "external_id": "4454543",
+  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
+}
+
+<> 2020-09-07T100255.500.json
+
+###
+
+POST http://localhost:8084/execute
+Accept: */*
+Cache-Control: no-cache
+
+<> 2020-09-07T100051.400.json
+
+###
+
+GET http://localhost:8084/ping
+Accept: */*
+Cache-Control: no-cache
+
+<> 2020-09-07T100036.200.json
+
+###
+
+GET http://localhost:8081/ping
+Accept: */*
+Cache-Control: no-cache
+
+###
+

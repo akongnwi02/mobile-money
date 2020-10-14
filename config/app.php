@@ -34,6 +34,8 @@ return [
             'webpayment_url' => env('SERVICE_ORANGE_WEB_PAYMENT_URL'),
             'webpayment_code' => env('SERVICE_ORANGE_WEB_PAYMENT_CODE'),
             'webpayment_token' => env('SERVICE_ORANGE_WEB_PAYMENT_OAUTH_TOKEN'),
+            'webpayment_key' => env('SERVICE_ORANGE_WEB_PAYMENT_OAUTH_KEY'),
+            'webpayment_secret' => env('SERVICE_ORANGE_WEB_PAYMENT_OAUTH_SECRET'),
             'webpayment_api_username' => env('SERVICE_ORANGE_WEB_PAYMENT_API_USERNAME'),
             'webpayment_api_password' => env('SERVICE_ORANGE_WEB_PAYMENT_API_PASSWORD'),
             'webpayment_channel_msisdn' => env('SERVICE_ORANGE_WEB_PAYMENT_CHANNEL_MSISDN'),
