@@ -15,8 +15,8 @@ class CreateAuthenticationTable extends Migration
     {
         Schema::create('authentications', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('access_token');
-            $table->string('refresh_token')->nullable();
+            $table->text('access_token');
+            $table->text('refresh_token')->nullable();
             $table->bigInteger('expires_in')->nullable();
             $table->string('service_code');
             $table->string('type')->nullable();
