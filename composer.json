@@ -7,7 +7,7 @@
     "require": {
         "php": "<=7.3",
         "ext-json": "*",
-        "doctrine/dbal": "^2.11",
+        "doctrine/dbal": "^2.6",
         "guzzlehttp/guzzle": "^6.3",
         "illuminate/redis": "5.7.*",
         "laravel/lumen-framework": "5.7.*",
