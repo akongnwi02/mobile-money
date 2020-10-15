@@ -11,9 +11,11 @@ namespace App\Services\Clients\Providers\Mtn;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
+use App\Models\Authentication;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -50,7 +52,7 @@ class MtnClient implements ClientInterface
     public function verifyNumber($accountNumber): Account
     {
         // TODO To be tested and re-executed
-        $bearerToken = $this->authenticate();
+        $bearerToken = $this->getAccessToken();
         $verifyUrl = $this->config['url'] . "/{$this->config['subscription']}/v1_0/accountholder/msisdn/$accountNumber/active/";
         
         Log::debug("{$this->getClientName()}: Verifying client account", [
@@ -95,16 +97,41 @@ class MtnClient implements ClientInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws BadRequestException
      */
-    public function authenticate()
+    public function getAccessToken()
+    {
+        $auth = Authentication::where('service_code', $this->config['service_code'])->latest()->get()->first();
+    
+        if ($auth && (Carbon::now()->diffInSeconds($auth->created_at) < $auth->expires_in)) {
+            Log::debug("{$this->getClientName()}: Valid OAuth token found for service: {$this->config['service_code']}", [
+                'expires_in' => $auth->expires_in,
+                'created_at' => $auth->created_at->toDateTimeString(),
+                'current_time' => Carbon::now()->toDateTimeString(),
+            ]);
+            return $auth->access_token;
+        }
+    
+        Log::debug("{$this->getClientName()}: No valid access token found locally. Connecting to service provider to generate new one", [
+            'service' => $this->config['service_code']
+        ]);
+    
+        return $this->generateNewAccessToken();
+    }
+    
+    /**
+     * @return mixed
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function generateNewAccessToken()
     {
         $url = $this->config['url'] . "/{$this->config['subscription']}/token/";
-        
+    
         $basicAuth = base64_encode($this->config['user'] . ':' . $this->config['password']);
-        
+    
         Log::debug("{$this->getClientName()}: Generating new authorization token for {$this->config['subscription']} api", [
             'url' => $url
         ]);
-        
+    
         $httpClient = $this->getHttpClient($url);
         try {
             $response = $httpClient->request('POST', '', [
@@ -114,22 +141,30 @@ class MtnClient implements ClientInterface
             throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error connecting to service provider to generate token: ' . $exception->getMessage());
         }
-        
+    
         $content = $response->getBody()->getContents();
-        
+    
         Log::debug("{$this->getClientName()}: Response from service provider", [
 //            'response' => $content
         ]);
-        
+    
         $body = json_decode($content);
     
         if (isset($body->access_token)) {
+    
+            Authentication::create([
+                'expires_in' => $body->expires_in,
+                'access_token' => $body->access_token,
+                'refresh_token' => null,
+                'service_code' => $this->config['service_code'],
+                'type' => 'Bearer'
+            ]);
+            
             Log::info("{$this->getClientName()}: Token Retrieved successfully");
             return $body->access_token;
         }
-        
+    
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
-        
     }
     
     /**
@@ -193,7 +228,7 @@ class MtnClient implements ClientInterface
      */
     public function getStatus($transaction)
     {
-        $bearerToken = $this->authenticate();
+        $bearerToken = $this->getAccessToken();
         $statusUrl = $this->config['url'] . "{$this->config['perform_uri']}/$transaction->internal_id";
     
         Log::debug("{$this->getClientName()}: Sending verification request to service provider", [
@@ -242,7 +277,7 @@ class MtnClient implements ClientInterface
      */
     public function performTransaction(Account $account)
     {
-        $bearerToken = $this->authenticate();
+        $bearerToken = $this->getAccessToken();
         $performUrl = $this->config['url'] . "{$this->config['perform_uri']}";
         
         $json = [
