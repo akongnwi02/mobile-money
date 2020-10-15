@@ -236,7 +236,7 @@ class OrangeClient implements ClientInterface
         try {
             $response = $httpClient->request('GET');
         } catch (\Exception $exception) {
-            Log::emergency('Error sending init request to service provider: ' . $exception->getMessage());
+            Log::emergency('Error sending status request to service provider: ' . $exception->getMessage());
             throw new GeneralException(ErrorCodesConstants::GENERAL_CODE,
                 'Service provider error: ' . $exception->getMessage());
         }
