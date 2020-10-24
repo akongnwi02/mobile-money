@@ -158,7 +158,7 @@ class OrangeClient implements ClientInterface
                     $pushUrl  = $this->config['url'] . $this->config['subscription'] . "/push/$payToken";
 
                     $pushClient = $this->getHttpClient($pushUrl);
-                    $pushClient->request('GET');
+                    $pushClient->requestAsync('GET');
                     Log::info("{$this->getClientName()}: Transaction pushed to customer for confirmation successfully");
                 } catch (\ Exception $exception) {
                     Log::warning("{$this->getClientName()}: Error pushing transaction to customer", ['message' => $exception->getMessage()]);
