@@ -87,16 +87,20 @@ trait ClientProvider
                 return new MtnCashoutClient($config);
             
             case  config('app.services.mtn.cashin_code'):
+    
+                $config['proxy']            = config('app.fixie_url');
                 $config['url']              = config('app.services.mtn.url');
                 $config['environment']      = config('app.services.mtn.environment');
                 $config['callback_url']     = config('app.url') . '/callback/mtn';
-                $config['subscription']     = 'remittance';
+                $config['subscription']     = 'disbursement';
                 $config['subscription_key'] = config('app.services.mtn.cashin_key');
                 $config['user']             = config('app.services.mtn.cashin_user');
                 $config['password']         = config('app.services.mtn.cashin_password');
-                $config['perform_uri']      = 'remittance/v1_0/transfer';
+                $config['perform_uri']      = '/disbursement/v1_0/transfer';
                 $config['status_uri']       = '';
                 $config['service_code']     = config('app.services.mtn.cashin_code');
+                $config['use_proxy']        = config('app.services.mtn.cashin_use_proxy');
+            
                 return new MtnCashinClient($config);
             
             default:

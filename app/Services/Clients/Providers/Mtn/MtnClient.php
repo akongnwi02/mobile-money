@@ -285,7 +285,7 @@ class MtnClient implements ClientInterface
             'amount'       => $account->getAmount(),
             'currency'     => 'XAF',
             'externalId'   => $account->getIntId(),
-            $this->config['subscription'] == 'collection' ? 'payer':'payee'  => [
+            'payer' => [
                 'partyIdType' => 'MSISDN',
                 'partyId'     => $account->getAccountNumber(),
             ],
@@ -318,12 +318,14 @@ class MtnClient implements ClientInterface
     
         $content = $response->getBody()->getContents();
     
-        Log::debug("{$this->getClientName()}: Response from service provider", [
-            'response' => $content
+        Log::debug("{$this->getClientName()}: Purchase response from service provider", [
+            'content' => $content,
+            'status code' => $response->getStatusCode()
         ]);
+        
         $body = json_decode($content);
 
-        if ($response->getStatusCode() == 202) {
+        if ($response->getStatusCode() == 202 || $response->getStatusCode() == 200) {
             return true;
         } else if (isset($body->code)){
             switch ($body->code) {
@@ -353,6 +355,12 @@ class MtnClient implements ClientInterface
      */
     public function getHttpClient($url)
     {
+        $proxy = null;
+    
+        if ($this->config['subscription'] == 'disbursement' && $this->config['use_proxy']) {
+            $proxy = $this->config['proxy'];
+        }
+        
         return new Client([
             'base_uri'        => $url,
             'timeout'         => 120,
@@ -364,6 +372,7 @@ class MtnClient implements ClientInterface
                 'Content-Type' => 'application/json',
                 'X-Callback-Url' => $this->config['callback_url'],
             ],
+            'proxy' => $proxy
         ]);
     }
     

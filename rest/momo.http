@@ -14,10 +14,23 @@ Content-Type: application/json
 
 {
   "service_code": "CORORANGEWEBPAY",
-  "destination": "655458778",
-  "external_id": "1421ddf4dd3fd",
+  "destination": "653754334",
+  "external_id": "1421ddf4djd3fd",
   "amount": "1",
   "callback_url": "https://webhook.site/46892258-e912-4cda-9dd0-161431b0cac9"
+}
+
+### MOMO CASHIN
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORMTNIN",
+  "destination": "653754334",
+  "external_id": "fdafda",
+  "amount": "10",
+  "callback_url": "https://webhook.site/884544b6-ff38-493b-b390-678f5188a34b"
 }
 
 ###
