@@ -285,12 +285,12 @@ class MtnClient implements ClientInterface
             'amount'       => $account->getAmount(),
             'currency'     => 'XAF',
             'externalId'   => $account->getIntId(),
-            'payer' => [
+            $this->config['subscription'] == 'collection' ? 'payer':'payee'  => [
                 'partyIdType' => 'MSISDN',
-                'partyId'     => $account->getAccountNumber(),
+                'partyId'     => '237' . substr($account->getAccountNumber(), -9),
             ],
             'payerMessage' => 'CorlangLimited',
-            'payeeNote'    => 'Thanks',
+            'payeeNote'    => 'CorlaPay',
         ];
     
         Log::debug("{$this->getClientName()}: Sending purchase request to service provider", [
@@ -332,6 +332,9 @@ class MtnClient implements ClientInterface
                 case "PAYEE_NOT_FOUND":
                     $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
                     break;
+                case "PAYER_NOT_FOUND":
+                    $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
+                    break;
                 case "NOT_ENOUGH_FUNDS":
                     $error_code = ErrorCodesConstants::INSUFFICIENT_FUNDS_IN_WALLET;
                     break;
@@ -355,8 +358,17 @@ class MtnClient implements ClientInterface
      */
     public function getHttpClient($url)
     {
+        $headers = [
+            'X-Target-Environment' => $this->config['environment'],
+            'Ocp-Apim-Subscription-Key' => $this->config['subscription_key'],
+            'Content-Type' => 'application/json',
+        ];
+
+        if ($this->config['subscription'] == 'collection') {
+            $headers['X-Callback-Url'] = $this->config['callback_url'];
+        }
+
         $proxy = null;
-    
         if ($this->config['subscription'] == 'disbursement' && $this->config['use_proxy']) {
             $proxy = $this->config['proxy'];
         }
@@ -366,12 +378,7 @@ class MtnClient implements ClientInterface
             'timeout'         => 120,
             'connect_timeout' => 120,
             'allow_redirects' => true,
-            'headers'         => [
-                'X-Target-Environment' => $this->config['environment'],
-                'Ocp-Apim-Subscription-Key' => $this->config['subscription_key'],
-                'Content-Type' => 'application/json',
-                'X-Callback-Url' => $this->config['callback_url'],
-            ],
+            'headers'         => $headers,
             'proxy' => $proxy
         ]);
     }
