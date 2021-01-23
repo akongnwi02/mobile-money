@@ -9,6 +9,7 @@
 namespace App\Jobs;
 
 use App\Models\Transaction;
+use App\Notifications\VerificationError;
 use App\Services\Clients\ClientProvider;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
@@ -165,6 +166,11 @@ class StatusJob extends Job
             'exception'                         => $exception,
         ]);
         
+        /*
+         * Notify the channel of the failed status check
+         */
+        $this->transaction->notify(new VerificationError($this->transaction));
+    
         /*
          * Transaction Status cannot be determined after several retries. Send to callback queue
          */
