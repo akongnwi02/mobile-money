@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Exceptions\BadRequestException;
 use App\Models\Transaction;
+use App\Notifications\PurchaseError;
 use App\Services\Clients\ClientProvider;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
@@ -149,6 +150,11 @@ class PurchaseJob extends Job
             'transaction.service'     => $this->transaction->service_code,
             'exception'               => $exception,
         ]);
+        
+        /*
+         * Notify the channel of the failed transaction
+         */
+        $this->transaction->notify(new PurchaseError($this->transaction));
         
         /*
          * Transaction failed due to a unexpected error, dispatch to verification queue
