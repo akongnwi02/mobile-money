@@ -15,9 +15,9 @@ Content-Type: application/json
 {
   "service_code": "CORORANGEWEBPAY",
   "destination": "653754334",
-  "external_id": "875455wewrac",
+  "external_id": "afdaa[",
   "amount": "1",
-  "callback_url": "https://webhook.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+  "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
 }
 
 ### MOMO CASHIN
@@ -31,6 +31,15 @@ Content-Type: application/json
   "external_id": "fdafda",
   "amount": "10",
   "callback_url": "https://webhook.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+### orange callback
+POST http://localhost:8084/callback/orange/wp
+Content-Type: application/json
+
+{
+  "payToken": "abcd-12345",
+  "status": "SUCCESSFULL"
 }
 
 ###
