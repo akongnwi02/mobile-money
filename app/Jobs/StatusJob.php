@@ -39,7 +39,7 @@ class StatusJob extends Job
      * Number of retries
      * @var int
      */
-    public $tries = 5;
+    public $tries = 10;
     
     /**
      * Create a new job instance.
@@ -169,7 +169,9 @@ class StatusJob extends Job
         /*
          * Notify the channel of the failed status check
          */
-        $this->transaction->notify(new VerificationError($this->transaction));
+        if (config('app.enable_notifications')) {
+            $this->transaction->notify(new VerificationError($this->transaction));
+        }
     
         /*
          * Transaction Status cannot be determined after several retries. Send to callback queue

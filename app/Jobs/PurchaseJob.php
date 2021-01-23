@@ -154,7 +154,9 @@ class PurchaseJob extends Job
         /*
          * Notify the channel of the failed transaction
          */
-        $this->transaction->notify(new PurchaseError($this->transaction));
+        if (config('app.enable_notifications')) {
+            $this->transaction->notify(new PurchaseError($this->transaction));
+        }
         
         /*
          * Transaction failed due to a unexpected error, dispatch to verification queue
