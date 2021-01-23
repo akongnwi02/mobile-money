@@ -1,0 +1,94 @@
+[
+  {
+    "httpRequest": {
+      "path": "/token"
+    },
+    "httpResponse": {
+      "body": {
+        "access_token": "abck-12345-78954",
+        "expires_in": "3600",
+        "type": "bearer"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/omcoreapis/1.0.2/mp/init"
+    },
+    "httpResponse": {
+      "body": {
+        "data": {
+          "payToken": "abcd-12345"
+        },
+        "message": "Transaction Initiated successfully"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/omcoreapis/1.0.2/mp/pay"
+    },
+    "httpResponse": {
+      "body": {
+        "notifUrl": "string",
+        "channelUserMsisdn": "string",
+        "amount": 0,
+        "subscriberMsisdn": "string",
+        "pin": "string",
+        "orderId": "string",
+        "description": "Waiting for customer confirmation",
+        "payToken": "abcd-12345"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/omcoreapis/1.0.2/mp/paymentstatus/abcd-12345"
+    },
+    "httpResponse": {
+      "body": {
+        "data": {
+          "createtime": 0,
+          "amount": 0,
+          "channelUserMsisdn": "string",
+          "inittxnmessage": "string",
+          "confirmtxnmessage": "string",
+          "confirmtxnstatus": "string",
+          "subscriberMsisdn": "string",
+          "txnmode": "string",
+          "notifyUrl": "string",
+          "inittxnstatus": "string",
+          "payToken": "string",
+          "txnid": "string",
+          "status": "SUCCESSFULL"
+        },
+        "message": "string"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/omcoreapis/1.0.2/mp/push/abcd-12345"
+    },
+    "httpResponse": {
+      "body": {
+        "data": {
+          "createtime": 0,
+          "amount": 0,
+          "channelUserMsisdn": "string",
+          "inittxnmessage": "string",
+          "confirmtxnmessage": "string",
+          "confirmtxnstatus": "string",
+          "subscriberMsisdn": "string",
+          "txnmode": "string",
+          "notifyUrl": "string",
+          "inittxnstatus": "string",
+          "payToken": "string",
+          "txnid": "string",
+          "status": "SUCCESSFULL"
+        },
+        "message": "string"
+      }
+    }
+  }
+]

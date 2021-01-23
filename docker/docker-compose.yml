@@ -93,3 +93,18 @@ services:
         - "${MYSQL_PORT}:3306"
       networks:
         - backend
+
+#### MOCK ###################################################################
+    mockserver:
+      build:
+        context: ./mockserver
+      command: -serverPort 1090
+      environment:
+        - MOCKSERVER_WATCH_INITIALIZATION_JSON=true
+        - MOCKSERVER_INITIALIZATION_JSON_PATH=/tmp/api.json
+      volumes:
+        - ./mockserver/api.json:/tmp/api.json
+      networks:
+        - backend
+      ports:
+        - ${MOCKSERVER_PORT}:1090
