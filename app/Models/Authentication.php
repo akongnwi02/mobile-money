@@ -9,10 +9,13 @@
 namespace App\Models;
 
 
+use App\Models\Notifications\NotificationTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Authentication extends Model
 {
+    use NotificationTrait;
+    
     protected $fillable = [
         'expires_in',
         'access_token',

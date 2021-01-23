@@ -8,9 +8,12 @@
         "php": "^7.3",
         "ext-json": "*",
         "guzzlehttp/guzzle": "^6.3",
+        "illuminate/mail": "5.7",
+        "illuminate/notifications": "5.7",
         "illuminate/redis": "5.7.*",
         "laravel/lumen-framework": "5.7.*",
         "predis/predis": "~1.0",
+        "ramsey/uuid": "^4.1",
         "vlucas/phpdotenv": "~2.2",
         "webpatser/laravel-uuid": "^3.0"
     },

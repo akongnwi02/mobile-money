@@ -13,6 +13,8 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
 use App\Models\Authentication;
 use App\Models\Transaction;
+use App\Notifications\AuthenticationError;
+use App\Notifications\PurchaseError;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
@@ -94,6 +96,15 @@ class OrangeClient implements ClientInterface
         try {
             $payTokenResponse = $payTokenClient->request('POST');
         } catch (\Exception $exception) {
+            
+            $transaction = Transaction::where('internal_id', $account->getIntId())->first();
+            $transaction->error = 'Error sending init request to service provider: ' . $exception->getMessage();
+            $transaction->message = 'Error sending init request to service provider';
+            $transaction->save();
+    
+            if (config('app.enable_notifications')) {
+                $transaction->notify(new PurchaseError($transaction));
+            }
             Log::emergency('Error sending init request to service provider: ' . $exception->getMessage());
             throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error sending init request to service provider: ' . $exception->getMessage());
@@ -115,6 +126,14 @@ class OrangeClient implements ClientInterface
             $transaction->save();
         
         } catch (\Exception $exception) {
+            $transaction = Transaction::where('internal_id', $account->getIntId())->first();
+            $transaction->error = 'Error sending init request to service provider: ' . $exception->getMessage();
+            $transaction->message = 'Error sending init request to service provider';
+            $transaction->save();
+    
+            if (config('app.enable_notifications')) {
+                $transaction->notify(new PurchaseError($transaction));
+            }
             Log::emergency("{$this->getClientName()}: Error retrieving pay token from response");
             throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, $exception->getMessage());
         }
@@ -166,9 +185,14 @@ class OrangeClient implements ClientInterface
             }
             
         } catch (\GuzzleHttp\Exception\ClientException $exception) {
-            Log::error("{$this->getClientName()}: An error occurred when sending payment request");
+            Log::error("{$this->getClientName()}: A possible client error occurred when sending payment request to service provider");
             $paymentResponse = $exception->getResponse();
         } catch (\Exception $exception) {
+    
+            $transaction = Transaction::where('internal_id', $account->getIntId())->first();
+            $transaction->error = 'Error sending payment request to service provider: ' . $exception->getMessage();
+            $transaction->message = 'Error sending payment request to service provider';
+            $transaction->save();
             throw new GeneralException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Unexpected error initiating payment with service provider: ' . $exception->getMessage());
         }
@@ -197,7 +221,7 @@ class OrangeClient implements ClientInterface
                 default:
                     $error_code = ErrorCodesConstants::GENERAL_CODE;
             }
-            throw new BadRequestException($error_code, $body->message);
+            throw new BadRequestException($error_code, @$body->message);
         }
     }
     
@@ -213,10 +237,18 @@ class OrangeClient implements ClientInterface
         $status = $this->getStatus($transaction);
     
         Log::info("{$this->getClientName()}: Transaction exists in partner system with status $status");
-        if (strtoupper($status) == 'PENDING') {
+        if (in_array(strtoupper($status), [
+            'FAILED',
+            'EXPIRED',
+            'CANCELED',
+            'CANCELLED',
+            'PENDING',
+            'SUCCESSFUL',
+            'SUCCESSFULL',
+        ])){
             return true;
         }
-        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a reliable state. We expect to have the status \'PENDING\'');
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a status we can process. Let\'s recheck.');
     }
     
     /**
@@ -236,7 +268,12 @@ class OrangeClient implements ClientInterface
         try {
             $response = $httpClient->request('GET');
         } catch (\Exception $exception) {
-            Log::emergency('Error sending status request to service provider: ' . $exception->getMessage());
+    
+    
+            $transaction->error = 'Error verifying status with service provider: ' . $exception->getMessage();
+            $transaction->save();
+            
+            Log::emergency($this->getClientName() . ': Error sending status request to service provider: ' . $exception->getMessage());
             throw new GeneralException(ErrorCodesConstants::GENERAL_CODE,
                 'Service provider error: ' . $exception->getMessage());
         }
@@ -309,7 +346,6 @@ class OrangeClient implements ClientInterface
     /**
      * @return mixed
      * @throws BadRequestException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function generateNewAccessToken()
     {
@@ -340,10 +376,15 @@ class OrangeClient implements ClientInterface
                 ]
             ]);
         } catch (\Exception $exception) {
-            Log::error("{$this->getClientName()}: Could not authenticate with service provider", [
+            Log::emergency("{$this->getClientName()}: Could not authenticate with service provider", [
                 'service_code' => $this->config['service_code'],
                 'error' => $exception->getMessage()
             ]);
+    
+            if (config('app.enable_notifications')) {
+                (new Authentication())->notify(new AuthenticationError($exception->getMessage()));
+            }
+    
             throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error connecting to service provider to generate token: ' . $exception->getMessage());
         }
@@ -372,7 +413,10 @@ class OrangeClient implements ClientInterface
             return $body->access_token;
         }
         
-        Log::emergency("{$this->getClientName()}: Cannot authenticate with service provider", ['service' => $this->config['service_code']]);
+        if (config('app.enable_notifications')) {
+            (new Authentication())->notify(new AuthenticationError('No authentication bearer token found in response from service provider'));
+        }
+        Log::emergency("{$this->getClientName()}: Cannot authenticate with service provider unable to retrieve token from response", ['service' => $this->config['service_code']]);
         
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
     }

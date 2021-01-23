@@ -10,6 +10,8 @@ return [
     'whitelist'             => env('APP_IP_WHITELIST'),
     'debug'                 => env('APP_DEBUG', true),
     'partner_restriction'   => env('APP_PARTNER_RESTRICTION', true),
+    'enable_notifications' => env('APP_NOTIFICATION', false),
+    
     'search_cache_lifetime' => 10,
     
     /*

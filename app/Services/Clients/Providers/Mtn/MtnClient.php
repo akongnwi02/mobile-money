@@ -12,6 +12,8 @@ namespace App\Services\Clients\Providers\Mtn;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
 use App\Models\Authentication;
+use App\Models\Transaction;
+use App\Notifications\AuthenticationError;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
@@ -138,6 +140,15 @@ class MtnClient implements ClientInterface
                 'headers' => ['Authorization' => "Basic $basicAuth"]
             ]);
         } catch (\Exception $exception) {
+            
+            Log::emergency("{$this->getClientName()}: Could not authenticate with service provider", [
+                'service_code' => $this->config['service_code'],
+                'error' => $exception->getMessage()
+            ]);
+            
+            if (config('app.enable_notifications')) {
+                (new Authentication())->notify(new AuthenticationError($exception->getMessage()));
+            }
             throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error connecting to service provider to generate token: ' . $exception->getMessage());
         }
@@ -163,6 +174,11 @@ class MtnClient implements ClientInterface
             Log::info("{$this->getClientName()}: Token Retrieved successfully");
             return $body->access_token;
         }
+    
+        if (config('app.enable_notifications')) {
+            (new Authentication())->notify(new AuthenticationError('No authentication bearer token found in response from service provider'));
+        }
+        Log::emergency("{$this->getClientName()}: Cannot authenticate with service provider unable to retrieve token from response", ['service' => $this->config['service_code']]);
         
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
     }
@@ -214,10 +230,20 @@ class MtnClient implements ClientInterface
         $status = $this->getStatus($transaction);
         
         Log::info("{$this->getClientName()}: Transaction exists in partner system with status $status");
-        if (strtoupper($status) == 'PENDING') {
+        if (in_array(strtoupper($status), [
+            'FAILED',
+            'EXPIRED',
+            'CANCELLED',
+            'CANCELED',
+            // GUESS WORK
+            'SUCCESSFUL',
+            'ABORTED',
+            'DELETED',
+            'TERMINATED',
+        ])){
             return true;
         }
-        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a reliable state. We expect to have the status \'PENDING\'');
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Transaction is not in a status we can process. Let\'s recheck.');
     }
     
     /**
@@ -249,6 +275,12 @@ class MtnClient implements ClientInterface
         } catch (\GuzzleHttp\Exception\ClientException $exception) {
             $response = $exception->getResponse();
         } catch (\Exception $exception) {
+    
+    
+            $transaction->error = 'Error verifying status with service provider: ' . $exception->getMessage();
+            $transaction->save();
+    
+            Log::emergency($this->getClientName() . ': Error sending status request to service provider: ' . $exception->getMessage());
             throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, $exception->getMessage());
         }
     
@@ -312,6 +344,10 @@ class MtnClient implements ClientInterface
             $response = $exception->getResponse();
         }
         catch (\Exception $exception) {
+            $transaction = Transaction::where('internal_id', $account->getIntId())->first();
+            $transaction->error = 'Error sending payment request to service provider: ' . $exception->getMessage();
+            $transaction->message = 'Error sending payment request to service provider';
+            $transaction->save();
             throw new GeneralException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error connecting to service provider to execute service: ' . $exception->getMessage());
         }

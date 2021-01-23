@@ -14,6 +14,7 @@ use App\Exceptions\GeneralException;
 use App\Exceptions\NotFoundException;
 use App\Jobs\CallbackJob;
 use App\Models\Transaction;
+use App\Notifications\StatusMismatchError;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
@@ -100,6 +101,13 @@ class OrangeCallbackController extends CallbackController
                 'transaction.created_at'            => $transaction->created_at->toDatetimeString(),
                 'transaction.destination'           => $transaction->destination,
             ]);
+            
+            /*
+             * Notify the channel of the failed status check
+             */
+            if (config('app.enable_notifications')) {
+                $transaction->notify(new StatusMismatchError($transaction));
+            }
             throw new GeneralException(ErrorCodesConstants::TRANSACTION_IN_FINAL_STATUS, "Transaction $transaction->merchant_id is already in final status $transaction->status");
         };
     

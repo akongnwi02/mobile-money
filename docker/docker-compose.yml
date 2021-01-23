@@ -108,3 +108,12 @@ services:
         - backend
       ports:
         - ${MOCKSERVER_PORT}:1090
+
+### Fake SMTP Server #############################################
+    mailcatcher:
+      image: schickling/mailcatcher
+      ports:
+        - ${MAILCATCHER_HTTP_PORT}:1080
+        - ${MAILCATCHER_SMTP_PORT}:1025
+      networks:
+        - backend

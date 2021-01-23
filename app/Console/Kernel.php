@@ -26,6 +26,6 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // Update balance for MTN Cashin
-        $schedule->command('balance:update', [config('app.services.orange.cashin_code')])->everyTenMinutes();
+//        $schedule->command('balance:update', [config('app.services.orange.cashin_code')])->everyTenMinutes();
     }
 }

@@ -10,11 +10,13 @@
 namespace App\Models;
 
 use App\Models\Attributes\TransactionAttribute;
+use App\Models\Notifications\NotificationTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    use TransactionAttribute;
+    use TransactionAttribute,
+        NotificationTrait;
     
     protected $fillable = [];
 
@@ -22,4 +24,5 @@ class Transaction extends Model
         'amount' => 'double',
         'is_callback_sent' => 'boolean'
     ];
+
 }

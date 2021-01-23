@@ -13,6 +13,7 @@ use App\Exceptions\GeneralException;
 use App\Exceptions\NotFoundException;
 use App\Jobs\CallbackJob;
 use App\Models\Transaction;
+use App\Notifications\StatusMismatchError;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Constants\QueueConstants;
 use App\Services\Constants\TransactionConstants;
@@ -95,6 +96,9 @@ class MtnCallbackController extends CallbackController
                 'transaction.created_at'            => $transaction->created_at->toDatetimeString(),
                 'transaction.destination'           => $transaction->destination,
             ]);
+            if (config('app.enable_notifications')) {
+                $transaction->notify(new StatusMismatchError($transaction));
+            }
             throw new GeneralException(ErrorCodesConstants::TRANSACTION_IN_FINAL_STATUS, "Transaction $transaction->internal_id is already in final status $transaction->status. There was a status mismatch");
         }
         
