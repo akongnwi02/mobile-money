@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Transaction;
+use App\Notifications\CallbackError;
 use App\Services\Clients\CallbackClient;
 use Illuminate\Support\Facades\Log;
 
@@ -117,6 +118,13 @@ class CallbackJob extends Job
             'transaction.service'           => $this->transaction->service_code,
 
         ]);
+    
+        /*
+         * Notify the channel of the failed status check
+         */
+        if (config('app.enable_notifications')) {
+            $this->transaction->notify(new CallbackError($this->transaction));
+        }
     }
     
     public function getJobName()
