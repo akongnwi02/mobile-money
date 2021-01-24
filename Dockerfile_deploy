@@ -1,0 +1,47 @@
+FROM php:7.2-apache
+
+RUN apt-get update \
+ && apt-get install -y \
+ vim \
+ git \
+ nodejs \
+ wget\
+ zsh \
+ zlib1g-dev \
+ default-mysql-client \
+ libzip-dev \
+ libpq-dev \
+ openssl \
+
+ && docker-php-ext-install zip mysqli  pdo_mysql \
+ && pecl install xdebug \
+ && docker-php-ext-enable xdebug \
+ && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+ && docker-php-ext-install pdo pdo_pgsql pgsql \
+ && echo 'xdebug.remote_enable=on' >> /usr/local/etc/php/conf.d/xdebug.ini \
+ && echo 'xdebug.remote_host=host.docker.internal' >> /usr/local/etc/php/conf.d/xdebug.ini \
+ && echo 'xdebug.remote_port=9000' >>  /usr/local/etc/php/conf.d/xdebug.ini \
+ && a2enmod rewrite \
+ && sed -i 's!/var/www/html!/var/www/public!g' /etc/apache2/sites-available/000-default.conf \
+ && mv /var/www/html /var/www/public \
+ && curl -sS https://getcomposer.org/installer \
+  | php -- --install-dir=/usr/local/bin --filename=composer \
+ && echo "AllowEncodedSlashes On" >> /etc/apache2/apache2.conf
+
+RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+
+RUN apt-get install -y libpng-dev && docker-php-ext-install gd
+
+WORKDIR /var/www
+
+COPY . /var/www
+
+RUN composer install --no-interaction
+
+RUN chown -R www-data:www-data /var
+
+RUN chown -R 33:33 .
+
+RUN chmod -R 755 /var/www
+
+CMD sed -i "s/80/$PORT/g" /etc/apache2/sites-enabled/000-default.conf /etc/apache2/ports.conf && docker-php-entrypoint apache2-foreground

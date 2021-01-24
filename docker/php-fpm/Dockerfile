@@ -12,13 +12,13 @@
 # Note: Base Image name format {image-tag}-{php-version}
 #
 
-ARG HEXCELL_PHP_VERSION
+ARG PHP_VERSION
 
-FROM laradock/php-fpm:2.2-${HEXCELL_PHP_VERSION}
+FROM laradock/php-fpm:2.2-${PHP_VERSION}
 
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
-ARG HEXCELL_PHP_VERSION
+ARG PHP_VERSION
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -90,7 +90,7 @@ RUN if [ ${INSTALL_MYSQLI} = true ]; then \
 # Check PHP version:
 ###########################################################################
 
-RUN php -v | head -n 1 | grep -q "PHP ${HEXCELL_PHP_VERSION}."
+RUN php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 
 #
 #--------------------------------------------------------------------------

@@ -12,13 +12,13 @@
 # Note: Base Image name format {image-tag}-{php-version}
 #
 
-ARG HEXCELL_PHP_VERSION
+ARG PHP_VERSION
 
-FROM laradock/workspace:2.2-${HEXCELL_PHP_VERSION}
+FROM laradock/workspace:2.2-${PHP_VERSION}
 
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
-ARG HEXCELL_PHP_VERSION
+ARG PHP_VERSION
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -162,7 +162,7 @@ ARG INSTALL_PHPREDIS=false
 RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     # Install Php Redis extension
     printf "\n" | pecl -q install -o -f redis && \
-    echo "extension=redis.so" >> /etc/php/${HEXCELL_PHP_VERSION}/mods-available/redis.ini && \
+    echo "extension=redis.so" >> /etc/php/${PHP_VERSION}/mods-available/redis.ini && \
     phpenmod redis \
 ;fi
 
@@ -170,7 +170,7 @@ RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
 # Check PHP version:
 ###########################################################################
 
-RUN php -v | head -n 1 | grep -q "PHP ${HEXCELL_PHP_VERSION}."
+RUN php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 
 #
 #--------------------------------------------------------------------------
