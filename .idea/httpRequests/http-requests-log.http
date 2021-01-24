@@ -1,3 +1,24 @@
+GET http://localhost:8084/ping
+
+<> 2021-01-24T044319.200.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "653754334",
+  "external_id": "afdaa[",
+  "amount": "1",
+  "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+<> 2021-01-24T044308.500.json
+
+###
+
 POST http://localhost:8084/execute
 Content-Type: application/json
 
