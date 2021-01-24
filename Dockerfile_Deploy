@@ -16,6 +16,8 @@ FROM laradock/php-fpm:2.2-7.2
 
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
+WORKDIR /var/www
+
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -129,12 +131,39 @@ RUN { \
     echo 'stderr_logfile_maxbytes=0'; \
   } >> /etc/supervisor/supervisord.conf
 
+###########################################################################
+# OPCACHE
+###########################################################################
+
+RUN { \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.max_accelerated_files=4000'; \
+    echo 'opcache.revalidate_freq=2'; \
+    echo 'opcache.fast_shutdown=1'; \
+    echo 'opcache.enable_cli=1'; \
+  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+
+###########################################################################
+# Composer:
+###########################################################################
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Export composer vendor path
+RUN echo "" >> ~/.bashrc && \
+    echo 'export PATH="~/.composer/vendor/bin:$PATH"' >> ~/.bashrc
+
+
 #
 #--------------------------------------------------------------------------
 # Final Touch
 #--------------------------------------------------------------------------
 #
 ADD . /var/www
+
+RUN composer global install --working-dir=/var/www
 
 COPY ./docker/php-fpm/laravel.ini /usr/local/etc/php/conf.d
 COPY ./docker/php-fpm/xlaravel.pool.conf /usr/local/etc/php-fpm.d/
@@ -152,6 +181,6 @@ WORKDIR /var/www
 
 EXPOSE 80
 
-RUN sed -i 's|^listen = \[::\]:9000$|listen = /run/php-fpm.sock\nlisten.owner = www-data\nlisten.group = www-data|g' /usr/local/etc/php-fpm.d/zz-docker.conf
+#RUN sed -i 's|^listen = \[::\]:9000$|listen = /run/php-fpm.sock\nlisten.owner = www-data\nlisten.group = www-data|g' /usr/local/etc/php-fpm.d/zz-docker.conf
 
 CMD ["/usr/bin/supervisord", "-n"]
