@@ -9,7 +9,7 @@ GET http://localhost:8084/ping
 
 ###
 
-POST http://localhost:8084/execute
+POST http://localhost:8000/execute
 Content-Type: application/json
 
 {

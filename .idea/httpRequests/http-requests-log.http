@@ -1,3 +1,87 @@
+POST http://localhost:8000/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "653754334",
+  "external_id": "afdaa[",
+  "amount": "1",
+  "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+<> 2021-01-25T020551.201.json
+
+###
+
+POST http://localhost:8000/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "653754334",
+  "external_id": "afdaa[",
+  "amount": "1",
+  "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+###
+
+POST http://localhost:8000/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "653754334",
+  "external_id": "afdaa[",
+  "amount": "1",
+  "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+###
+
+POST http://localhost:8000/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "653754334",
+  "external_id": "afdaa[",
+  "amount": "1",
+  "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORORANGEWEBPAY",
+  "destination": "653754334",
+  "external_id": "afdaa[",
+  "amount": "1",
+  "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+<> 2021-01-25T020045.201.json
+
+###
+
+POST http://localhost:8084/execute
+Content-Type: application/json
+
+{
+  "service_code": "CORMTNIN",
+  "destination": "653754334",
+  "external_id": "fdafda",
+  "amount": "10",
+  "callback_url": "https://webhook.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
+}
+
+<> 2021-01-25T014943.201.json
+
+###
+
 GET http://localhost:8084/ping
 
 <> 2021-01-24T044319.200.json

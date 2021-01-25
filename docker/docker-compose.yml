@@ -124,3 +124,5 @@ services:
         - backend
       ports:
         - 8000:80
+      environment:
+        - PORT=80

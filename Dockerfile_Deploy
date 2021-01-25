@@ -86,26 +86,12 @@ RUN apt-get install -y nginx
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
 
-RUN { \
-    echo 'upstream php-fpm {'; \
-    echo '  server unix:/run/php-fpm.sock max_fails=0;'; \
-    echo '  keepalive 2;'; \
-    echo '}'; \
-    echo 'server {'; \
-    echo '  listen 80 default_server;'; \
-    echo '  server_name _;'; \
-    echo '  root /var/www/public;'; \
-    echo '  index index.php index.html index.htm;'; \
-    echo '  location ~ \.php$ {'; \
-    echo '    include snippets/fastcgi-php.conf;'; \
-    echo '    fastcgi_pass php-fpm;'; \
-    echo '    fastcgi_keep_conn on;'; \
-    echo '  }'; \
-    echo '  location / {'; \
-    echo '    try_files $uri $uri/ /index.php?$args;'; \
-    echo '  }'; \
-    echo '}'; \
-  } > /etc/nginx/sites-available/default
+COPY ./docker/nginx/nginx.conf /etc/nginx/
+COPY ./docker/nginx/sites /etc/nginx/sites-available
+
+# Set upstream conf and remove the default conf
+RUN echo "upstream php-upstream { server 127.0.0.1:9000; }" > /etc/nginx/conf.d/upstream.conf
+#RUN rm /etc/nginx/conf.d/default.conf
 
 
 ###########################################################################
@@ -115,35 +101,6 @@ RUN { \
 RUN apt-get install -y supervisor
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-RUN { \
-    echo '[program:nginx]'; \
-    echo 'command=/usr/sbin/nginx -g "daemon off;"'; \
-    echo 'stdout_logfile=/dev/stdout'; \
-    echo 'stdout_logfile_maxbytes=0'; \
-    echo 'stderr_logfile=/dev/stderr'; \
-    echo 'stderr_logfile_maxbytes=0'; \
-    echo '[program:php-fpm]'; \
-    echo 'command=/usr/local/sbin/php-fpm'; \
-    echo 'stdout_logfile=/dev/stdout'; \
-    echo 'stdout_logfile_maxbytes=0'; \
-    echo 'stderr_logfile=/dev/stderr'; \
-    echo 'stderr_logfile_maxbytes=0'; \
-  } >> /etc/supervisor/supervisord.conf
-
-###########################################################################
-# OPCACHE
-###########################################################################
-
-RUN { \
-    echo 'opcache.memory_consumption=128'; \
-    echo 'opcache.interned_strings_buffer=8'; \
-    echo 'opcache.max_accelerated_files=4000'; \
-    echo 'opcache.revalidate_freq=2'; \
-    echo 'opcache.fast_shutdown=1'; \
-    echo 'opcache.enable_cli=1'; \
-  } > /usr/local/etc/php/conf.d/opcache-recommended.ini
-
 
 ###########################################################################
 # Composer:
@@ -177,10 +134,8 @@ RUN apt-get clean && \
 
 RUN usermod -u 1000 www-data
 
+RUN sed -i "s/80/$PORT/g" /etc/nginx/sites-available/default.conf
+
 WORKDIR /var/www
-
-EXPOSE 80
-
-RUN sed -i 's|^listen = \[::\]:9000$|listen = /run/php-fpm.sock\nlisten.owner = www-data\nlisten.group = www-data|g' /usr/local/etc/php-fpm.d/zz-docker.conf
 
 CMD ["/usr/bin/supervisord", "-n"]
