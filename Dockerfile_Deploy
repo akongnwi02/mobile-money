@@ -26,7 +26,7 @@ RUN apt-get update -yqq && \
     apt-get install -y apt-utils && \
     pecl channel-update pecl.php.net
 
-RUN apt-get install vim nano
+RUN apt-get install -y vim nano
 
 #
 #--------------------------------------------------------------------------
