@@ -117,14 +117,3 @@ services:
         - ${MAILCATCHER_SMTP_PORT}:1025
       networks:
         - backend
-
-    momoapp:
-      image: momocm
-      networks:
-        - backend
-      ports:
-        - 8000:80
-      environment:
-        - PORT=8080
-      depends_on:
-        - mysql

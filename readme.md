@@ -1,21 +1,24 @@
-# Lumen PHP Framework
+# Mobile Money API
 
-[![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
-[![Total Downloads](https://poser.pugx.org/laravel/lumen-framework/d/total.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/lumen-framework/v/stable.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/lumen-framework/v/unstable.svg)](https://packagist.org/packages/laravel/lumen-framework)
-[![License](https://poser.pugx.org/laravel/lumen-framework/license.svg)](https://packagist.org/packages/laravel/lumen-framework)
+This API aggregates mobile money providers in cameroon and serves them via a single API
 
-Laravel Lumen is a stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Lumen attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as routing, database abstraction, queueing, and caching.
+## Services
 
-## Official Documentation
+- Orange Cash in / Cash out
+- MTN MoMo Cash in / Cash out
 
-Documentation for the framework can be found on the [Lumen website](http://lumen.laravel.com/docs).
+## Local Development
 
-## Security Vulnerabilities
+Check the Makefile file at the root for instructions how to start the application in development mode
 
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+## Deployment
 
-## License
+- Deployment is done on heroku platform inside a laradock docker container
 
-The Lumen framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+- Image with built with Dockerfile_Deploy file at the root of the project `docker build . -f Dockerfile_Deploy -t momocm`
+
+- Configure the application's internal port by passing an environment variable $PORT when starting the container (Heroku assigns a port dynamically as well when bringing up the container) 
+
+## API request
+
+Check the rest/momo.http file for sample requests
