@@ -125,4 +125,6 @@ services:
       ports:
         - 8000:80
       environment:
-        - PORT=80
+        - PORT=8080
+      depends_on:
+        - mysql

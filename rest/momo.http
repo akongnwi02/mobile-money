@@ -15,7 +15,7 @@ Content-Type: application/json
 {
   "service_code": "CORORANGEWEBPAY",
   "destination": "653754334",
-  "external_id": "afdaa[",
+  "external_id": "afdaua[",
   "amount": "1",
   "callback_url": "https://afafafdfeaf.site/ee3e39b8-98df-46d7-98b3-848c620a894b"
 }
