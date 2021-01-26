@@ -10,4 +10,7 @@ build:
 release:
   command:
     - php /var/www/artisan migrate --force
+  image: momocm
 
+run:
+  web: sh /var/www/entrypoint.sh
