@@ -6,3 +6,8 @@ setup:
 build:
   docker:
     web: Dockerfile_Deploy
+
+release:
+  command:
+    - php /var/www/artisan migrate --force
+
