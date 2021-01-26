@@ -19,6 +19,20 @@ Check the Makefile file at the root for instructions how to start the applicatio
 
 - Configure the application's internal port by passing an environment variable $PORT when starting the container (Heroku assigns a port dynamically as well when bringing up the container) 
 
+- Use the image locally with docker-compose 
+
+    ```yaml
+    momoapp:
+      image: momocm
+      networks:
+        - backend
+      ports:
+        - 8000:80
+      environment:
+        - PORT=80
+      depends_on:
+        - mysql
+     ```
 ## API request
 
 Check the rest/momo.http file for sample requests
