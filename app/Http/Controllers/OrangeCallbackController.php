@@ -101,13 +101,17 @@ class OrangeCallbackController extends CallbackController
                 'transaction.created_at'            => $transaction->created_at->toDatetimeString(),
                 'transaction.destination'           => $transaction->destination,
             ]);
-            
-            /*
-             * Notify the channel of the failed status check
-             */
+    
             if (config('app.enable_notifications')) {
-                $transaction->notify(new StatusMismatchError($transaction));
+                try {
+                    Log::info("{$this->getClassName()}: Notifying administrator of the failure");
+                    $transaction->notify(new StatusMismatchError($transaction));
+                } catch (\Exception $exception) {
+                    Log::error("{$this->getClassName()}: Error sending notification");
+                }
             }
+    
+    
             throw new GeneralException(ErrorCodesConstants::TRANSACTION_IN_FINAL_STATUS, "Transaction $transaction->merchant_id is already in final status $transaction->status");
         };
     

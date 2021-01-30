@@ -151,11 +151,13 @@ class PurchaseJob extends Job
             'exception'               => $exception,
         ]);
         
-        /*
-         * Notify the channel of the failed transaction
-         */
         if (config('app.enable_notifications')) {
-            $this->transaction->notify(new PurchaseError($this->transaction));
+            try {
+                Log::info("{$this->getJobName()}: Notifying administrator of the failure");
+                $this->transaction->notify(new PurchaseError($this->transaction));
+            } catch (\Exception $exception) {
+                Log::error("{$this->getJobName()}: Error sending notification");
+            }
         }
         
         /*

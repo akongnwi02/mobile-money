@@ -118,13 +118,17 @@ class CallbackJob extends Job
             'transaction.service'           => $this->transaction->service_code,
 
         ]);
+        
     
-        /*
-         * Notify the channel of the failed status check
-         */
         if (config('app.enable_notifications')) {
-            $this->transaction->notify(new CallbackError($this->transaction));
+            try {
+                Log::info("{$this->getJobName()}: Notifying administrator of the failure");
+                $this->transaction->notify(new CallbackError($this->transaction));
+            } catch (\Exception $exception) {
+                Log::error("{$this->getJobName()}: Error sending notification");
+            }
         }
+    
     }
     
     public function getJobName()

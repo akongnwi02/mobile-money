@@ -146,9 +146,15 @@ class MtnClient implements ClientInterface
                 'error' => $exception->getMessage()
             ]);
             
+    
             if (config('app.enable_notifications')) {
-                (new Authentication())->notify(new AuthenticationError($exception->getMessage()));
+                try {
+                    Log::info("{$this->getClientName()}: Notifying administrator of the failure");
+                    (new Authentication())->notify(new AuthenticationError($exception->getMessage()));                } catch (\Exception $exception) {
+                    Log::error("{$this->getClientName()}: Error sending notification");
+                }
             }
+    
             throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error connecting to service provider to generate token: ' . $exception->getMessage());
         }
@@ -175,9 +181,16 @@ class MtnClient implements ClientInterface
             return $body->access_token;
         }
     
+    
         if (config('app.enable_notifications')) {
-            (new Authentication())->notify(new AuthenticationError('No authentication bearer token found in response from service provider'));
+            try {
+                Log::info("{$this->getClientName()}: Notifying administrator of the failure");
+                (new Authentication())->notify(new AuthenticationError('No authentication bearer token found in response from service provider'));
+            } catch (\Exception $exception) {
+                Log::error("{$this->getClientName()}: Error sending notification");
+            }
         }
+        
         Log::emergency("{$this->getClientName()}: Cannot authenticate with service provider unable to retrieve token from response", ['service' => $this->config['service_code']]);
         
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');

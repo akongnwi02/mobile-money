@@ -165,12 +165,14 @@ class StatusJob extends Job
             'service'                           => $this->transaction->service_code,
             'exception'                         => $exception,
         ]);
-        
-        /*
-         * Notify the channel of the failed status check
-         */
+    
         if (config('app.enable_notifications')) {
-            $this->transaction->notify(new VerificationError($this->transaction));
+            try {
+                Log::info("{$this->getJobName()}: Notifying administrator of the failure");
+                $this->transaction->notify(new VerificationError($this->transaction));
+            } catch (\Exception $exception) {
+                Log::error("{$this->getJobName()}: Error sending notification");
+            }
         }
     
         /*

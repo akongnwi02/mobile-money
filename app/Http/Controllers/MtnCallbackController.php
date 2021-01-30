@@ -96,9 +96,16 @@ class MtnCallbackController extends CallbackController
                 'transaction.created_at'            => $transaction->created_at->toDatetimeString(),
                 'transaction.destination'           => $transaction->destination,
             ]);
+    
             if (config('app.enable_notifications')) {
-                $transaction->notify(new StatusMismatchError($transaction));
+                try {
+                    Log::info("{$this->getClassName()}: Notifying administrator of the failure");
+                    $transaction->notify(new StatusMismatchError($transaction));
+                } catch (\Exception $exception) {
+                    Log::error("{$this->getClassName()}: Error sending notification");
+                }
             }
+
             throw new GeneralException(ErrorCodesConstants::TRANSACTION_IN_FINAL_STATUS, "Transaction $transaction->internal_id is already in final status $transaction->status. There was a status mismatch");
         }
         
