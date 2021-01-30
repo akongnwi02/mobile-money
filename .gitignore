@@ -2,7 +2,6 @@
 /public/hot
 /public/storage
 public/images
-/storage
 /vendor
 /tests/_output
 /tests/_support/_generated
@@ -30,3 +29,4 @@ output.txt
 coverage.xml
 /coverage
 .phpunit.result.cache
+
