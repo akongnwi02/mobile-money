@@ -1,3 +1,118 @@
+GET http://localhost:8081/balance?service_code=CORMTNOUT
+Content-Type: application/json
+x-api-key: dfed89d80akfdalndfl12067672hjkfda
+
+<> 2022-05-13T121909.500.json
+
+###
+
+GET http://localhost:8081/balance?service_code=CORMTNOUT
+Content-Type: application/json
+x-api-key: dfed89d80akfdalndfl12067672hjkfdaA
+
+<> 2022-05-13T121903.403.json
+
+###
+
+GET http://localhost:8081/balance?service_code=CORMTNOUT
+Content-Type: application/json
+x-api-key: dfed89d80akfdalndfl12067672hjkfda
+
+<> 2022-05-13T121856.500.json
+
+###
+
+GET http://localhost:8081/balance?service_code=CORMTNOUT
+Content-Type: application/json
+x-api-key: dfed89d80akfdalndfl12067672hjkfda
+
+<> 2022-05-12T115435.500.json
+
+###
+
+GET http://localhost:8081/balance?service_code=CORMTNOUT
+Content-Type: application/json
+x-api-key: dfed89d80akfdalndfl12067672hjkfda
+
+{
+  "payToken": "abcd-12345",
+  "status": "SUCCESSFULL"
+}
+
+<> 2022-05-12T115256.500.json
+
+###
+
+GET http://localhost:8081/balance?service_code=ABCD
+Content-Type: application/json
+x-api-key: dfed89d80akfdalndfl12067672hjkfda
+
+{
+  "payToken": "abcd-12345",
+  "status": "SUCCESSFULL"
+}
+
+<> 2022-05-12T115225.500.json
+
+###
+
+GET http://localhost:8081/balance?sevice_code=ABCD
+Content-Type: application/json
+x-api-key: dfed89d80akfdalndfl12067672hjkfda
+
+{
+  "payToken": "abcd-12345",
+  "status": "SUCCESSFULL"
+}
+
+<> 2022-05-12T115202.400.json
+
+###
+
+GET http://localhost:8081/balance?sevice_code=ABCD
+Content-Type: application/json
+
+{
+  "payToken": "abcd-12345",
+  "status": "SUCCESSFULL"
+}
+
+<> 2022-05-12T114747.403.json
+
+###
+
+GET http://localhost:8081/balance?sevice_code=ABCD
+Content-Type: application/json
+
+{
+  "payToken": "abcd-12345",
+  "status": "SUCCESSFULL"
+}
+
+<> 2022-05-12T075720.403.json
+
+###
+
+GET http://localhost:8084/balance?sevice_code=ABCD
+Content-Type: application/json
+
+{
+  "payToken": "abcd-12345",
+  "status": "SUCCESSFULL"
+}
+
+###
+
+GET http://localhost:8081/ping
+
+<> 2022-05-12T062157.200.json
+
+###
+
+GET http://localhost:8084/ping
+
+###
+
 POST http://localhost:8000/execute
 Content-Type: application/json
 
@@ -519,119 +634,6 @@ Content-Type: application/json
 }
 
 <> 2020-10-14T120606.400.json
-
-###
-
-GET http://localhost:8084/ping
-
-<> 2020-10-14T120341.200.json
-
-###
-
-POST http://localhost:8084/execute
-Accept: */*
-Cache-Control: no-cache
-Content-Type: application/json
-
-{
-  "service_code": "CORORANGEIN",
-  "amount": 200,
-  "destination": "653754334",
-  "external_id": "4454d543",
-  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
-}
-
-<> 2020-09-07T100610.201.json
-
-###
-
-POST http://localhost:8084/execute
-Accept: */*
-Cache-Control: no-cache
-Content-Type: application/json
-
-{
-  "service_code": "CORORANGEIN",
-  "amount": 200,
-  "destination": "653754334",
-  "external_id": "4454d543",
-  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
-}
-
-<> 2020-09-07T100426.201.json
-
-###
-
-POST http://localhost:8084/execute
-Accept: */*
-Cache-Control: no-cache
-Content-Type: application/json
-
-{
-  "service_code": "CORORANGEIN",
-  "amount": 200,
-  "destination": "653754334",
-  "external_id": "4454543",
-  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
-}
-
-<> 2020-09-07T100414.400.json
-
-###
-
-POST http://localhost:8084/execute
-Accept: */*
-Cache-Control: no-cache
-Content-Type: application/json
-
-{
-  "service_code": "CORORANGEIN",
-  "amount": 200,
-  "destination": "653754334",
-  "external_id": "4454543",
-  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
-}
-
-<> 2020-09-07T100313.201.json
-
-###
-
-POST http://localhost:8084/execute
-Accept: */*
-Cache-Control: no-cache
-Content-Type: application/json
-
-{
-  "service_code": "CORORANGEIN",
-  "amount": 200,
-  "destination": "653754334",
-  "external_id": "4454543",
-  "callback_url": "https://webhook.site/a7066c38-4609-4f4e-b981-077ee1cc5615"
-}
-
-<> 2020-09-07T100255.500.json
-
-###
-
-POST http://localhost:8084/execute
-Accept: */*
-Cache-Control: no-cache
-
-<> 2020-09-07T100051.400.json
-
-###
-
-GET http://localhost:8084/ping
-Accept: */*
-Cache-Control: no-cache
-
-<> 2020-09-07T100036.200.json
-
-###
-
-GET http://localhost:8081/ping
-Accept: */*
-Cache-Control: no-cache
 
 ###
 

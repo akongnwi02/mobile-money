@@ -110,4 +110,22 @@ class TransactionController extends Controller
             'time' => Carbon::now()->toDateTimeString(),
         ]);
     }
+
+    /**
+     * @param Request $request
+     * @throws GeneralException
+     * @throws \App\Exceptions\BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function balance(Request $request)
+    {
+        Log::info('Incoming balance check request', ['input' => $request->input()]);
+        $this->validate($request, [
+            'service_code' => ['required', 'string', 'min:3',],
+        ]);
+
+        return $this->client($request['service_code'])->balance();
+
+    }
 }

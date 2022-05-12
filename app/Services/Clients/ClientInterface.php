@@ -27,4 +27,9 @@ interface ClientInterface
      * @return bool
      */
     public function buy(Account $account) : bool;
+
+    /**
+     * @return float
+     */
+    public function balance(): float;
 }

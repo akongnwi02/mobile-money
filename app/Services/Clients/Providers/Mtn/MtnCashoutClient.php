@@ -54,4 +54,14 @@ class MtnCashoutClient extends MtnClient
     {
         return parent::verifyTransaction($transaction);
     }
+
+    /**
+     * @return float
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function balance(): float
+    {
+        return parent::getAccountBalance();
+    }
 }

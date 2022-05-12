@@ -445,7 +445,11 @@ class OrangeClient implements ClientInterface
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
     }
     
-    
+    public function balance(): float
+    {
+        // TODO: Implement balance() method.
+    }
+
     /**
      * @param $url
      * @return Client

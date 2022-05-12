@@ -18,7 +18,8 @@ $router->group(['middleware' => 'auth'], function () use ($router) {
     $router->post('/execute', ['uses' => 'TransactionController@execute']);
     
     $router->get('/status/{external_id}', ['uses' => 'TransactionController@status']);
-    
+
+    $router->get('/balance', ['uses' => 'TransactionController@balance']);
 });
 
 /*

@@ -12,8 +12,10 @@ namespace App\Services\Clients\Providers\Mtn;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
 use App\Models\Authentication;
+use App\Models\Balance;
 use App\Models\Transaction;
 use App\Notifications\AuthenticationError;
+use App\Notifications\BalanceError;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
@@ -39,6 +41,10 @@ class MtnClient implements ClientInterface
         // IMPLEMENTED IN CHILDREN
     }
     public function search($accountNumber): Account
+    {
+        // IMPLEMENTED IN CHILDREN
+    }
+    public function balance(): float
     {
         // IMPLEMENTED IN CHILDREN
     }
@@ -380,8 +386,6 @@ class MtnClient implements ClientInterface
         } else if (isset($body->code)){
             switch ($body->code) {
                 case "PAYEE_NOT_FOUND":
-                    $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
-                    break;
                 case "PAYER_NOT_FOUND":
                     $error_code = ErrorCodesConstants::SUBSCRIBER_NOT_FOUND;
                     break;
@@ -401,7 +405,86 @@ class MtnClient implements ClientInterface
         }
         throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'An unexpected error occured during purchase');
     }
-    
+
+    /**
+     * @return mixed
+     * @throws BadRequestException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getAccountBalance()
+    {
+        $bearerToken = $this->getAccessToken();
+        $balanceUrl = $this->config['url'] . "/{$this->config['subscription']}/v1_0/account/balance";
+
+
+        Log::debug("{$this->getClientName()}: Sending balance check request to service provider", [
+            'URL' => $balanceUrl,
+            'subscription' => $this->config['subscription']
+        ]);
+
+        $httpClient = $this->getHttpClient($balanceUrl);
+        try {
+            $response = $httpClient->request('GET', "", [
+                'headers' => ['Authorization' => "Bearer $bearerToken"]
+            ]);
+        } catch (\Exception $exception) {
+
+            Log::emergency("{$this->getClientName()}: Could not get account balance from the service provider", [
+                'service_code' => $this->config['service_code'],
+                'error' => $exception->getMessage()
+            ]);
+
+            if (config('app.enable_notifications')) {
+                try {
+                    Log::info("{$this->getClientName()}: Notifying administrator of the failure");
+                    (new Balance())->notify(new BalanceError($exception->getMessage()));
+                } catch (\Exception $exception) {
+                    Log::error("{$this->getClientName()}: Error sending notification");
+                }
+            }
+
+            throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
+                'Error connecting to the service provider to get the balance: ' . $exception->getMessage());
+        }
+
+        $content = $response->getBody()->getContents();
+
+        Log::debug("{$this->getClientName()}: Response from the service provider", [
+            'response' => $content
+        ]);
+
+        $body = json_decode($content);
+
+        if (isset($body->availableBalance)) {
+
+            $previousBalance = Balance::where('service_code', $this->config['service_code'])->last();
+
+            Balance::create([
+                'previous' => $previousBalance ? $previousBalance->current : 0,
+                'current' => $body->availableBalance,
+                'service_code' => $this->config['service_code'],
+                'time' => Carbon::now()->toDateTimeString(),
+            ]);
+
+            Log::info("{$this->getClientName()}: Balance retrieved and saved successfully");
+            return $body->availableBalance;
+        }
+
+
+        if (config('app.enable_notifications')) {
+            try {
+                Log::info("{$this->getClientName()}: Notifying administrator of the failure");
+                (new Balance())->notify(new BalanceError('No balance amount found in response from service provider'));
+            } catch (\Exception $exception) {
+                Log::error("{$this->getClientName()}: Error sending notification");
+            }
+        }
+
+        Log::emergency("{$this->getClientName()}: Cannot retrieve balance from response", ['service' => $this->config['service_code']]);
+
+        throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get balance from response');
+    }
+
     /**
      * @param $url
      * @return Client
