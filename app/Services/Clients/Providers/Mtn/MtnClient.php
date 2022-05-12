@@ -150,7 +150,8 @@ class MtnClient implements ClientInterface
             if (config('app.enable_notifications')) {
                 try {
                     Log::info("{$this->getClientName()}: Notifying administrator of the failure");
-                    (new Authentication())->notify(new AuthenticationError($exception->getMessage()));                } catch (\Exception $exception) {
+                    (new Authentication())->notify(new AuthenticationError($exception->getMessage()));
+                } catch (\Exception $exception) {
                     Log::error("{$this->getClientName()}: Error sending notification");
                 }
             }
