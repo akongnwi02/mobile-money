@@ -16,7 +16,14 @@ class Balance extends Model
 {
     use NotificationTrait;
 
-    protected $fillable = [];
+    protected $table = 'balance';
+
+    protected $fillable = [
+        'previous',
+        'current',
+        'time',
+        'service_code',
+    ];
     
     protected $casts = [
         'previous' => 'double',
