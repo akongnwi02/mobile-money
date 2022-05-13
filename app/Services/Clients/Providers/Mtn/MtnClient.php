@@ -458,6 +458,13 @@ class MtnClient implements ClientInterface
         if (isset($body->availableBalance)) {
 
             $previousBalance = Balance::where('service_code', $this->config['service_code'])->get()->last();
+            if ($previousBalance) {
+                if ($previousBalance->current == $body->availableBalance) {
+                    $previousBalance->time = Carbon::now()->toDateTimeString();
+                    $previousBalance->save();
+                    return $body->availableBalance;
+                }
+            }
 
             Balance::create([
                 'previous' => $previousBalance ? $previousBalance->current : 0,
