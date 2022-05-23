@@ -39,7 +39,7 @@ class MtnCashinClient extends MtnClient
     {
         return parent::performTransaction($account);
     }
-    
+
     /**
      * @param $transaction
      * @return bool
@@ -55,6 +55,7 @@ class MtnCashinClient extends MtnClient
     /**
      * @return BalanceObject
      * @throws BadRequestException
+     * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function balance(): BalanceObject

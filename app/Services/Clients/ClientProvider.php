@@ -27,9 +27,6 @@ trait ClientProvider
      */
     public function client($serviceCode)
     {
-        if (strtolower(config('app.env') == 'testing')) {
-            return new TestClient();
-        }
         switch ($serviceCode) {
             case config('app.services.orange.webpayment_code'):
                 $config['subscription']   = 'mp';

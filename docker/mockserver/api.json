@@ -90,5 +90,44 @@
         "message": "string"
       }
     }
+  },
+
+
+  {
+    "httpRequest":{
+      "path":"/omcoreapis/1.0.2/cashin/init"
+    },
+    "httpResponse":{
+      "body":{
+        "message": "Payment request successfully initiated",
+        "data": {
+          "payToken": "CI2010077F7950C2224511BD588A"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest":{
+      "path":"/omcoreapis/1.0.2/cashin/pay"
+    },
+    "httpResponse":{
+      "body":{
+        "message": "Cash in performed successfully",
+        "data": {
+          "createtime": "1602081193",
+          "subscriberMsisdn": "655123456",
+          "amount": 1,
+          "payToken": "CI2010077F7950C2224511BD588A",
+          "txnid": "CI201007.1612.A00036",
+          "txnmode": "mav00110d023",
+          "txnmessage": "Depot vers 655123456 XXX reussi from 691301143 TDP_API_TEST. Informations detaillees : Montant transaction : 1FCFA, ID de Transaction : CI201007.1612.A00036, Frais : 0FCFA, Commission : 0 FCFA, Montant Net Debite : 1FCFA, Nouveau Solde : 4926005FCFA.",
+          "txnstatus": "200",
+          "orderId": "mav00110d023",
+          "status": "SUCCESSFULL",
+          "channelUserMsisdn": "691301143",
+          "description": "string"
+        }
+      }
+    }
   }
 ]

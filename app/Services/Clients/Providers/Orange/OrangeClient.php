@@ -12,8 +12,10 @@ namespace App\Services\Clients\Providers\Orange;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
 use App\Models\Authentication;
+use App\Models\Balance;
 use App\Models\Transaction;
 use App\Notifications\AuthenticationError;
+use App\Notifications\BalanceError;
 use App\Notifications\PurchaseError;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
@@ -216,6 +218,54 @@ class OrangeClient implements ClientInterface
         ]);
     
         if ($paymentResponse->getStatusCode() == 200) {
+            if ($this->config['subscription'] == 'cashin') {
+
+                $balancePattern = '/Nouveau Solde : (.*?)FCFA/s';
+                try {
+                    $balance = (float)$this->extractData($balancePattern, $content);
+                    if($balance){
+
+                        Log::debug("{$this->getClientName()}: Balance found in response", [
+                            'response' => $balance
+                        ]);
+
+                        $previousBalance = Balance::where('service_code', $this->config['service_code'])->get()->last();
+
+                        $currentBalance = Balance::create([
+                            'previous' => $previousBalance ? $previousBalance->current : 0,
+                            'current' => $balance,
+                            'service_code' => $this->config['service_code'],
+                            'time' => Carbon::now()->toDateTimeString(),
+                        ]);
+
+                        if ($currentBalance) {
+                            Log::info("{$this->getClientName()}: Balance retrieved and saved successfully");
+                        } else {
+                            if (config('app.enable_notifications')) {
+                                try {
+                                    Log::info("{$this->getClientName()}: Notifying administrator of the failure");
+                                    (new Balance())->notify(new BalanceError("Error writing balance to database after retrieving it from response"));
+                                } catch (\Exception $exception) {
+                                    Log::error("{$this->getClientName()}: Error sending notification");
+                                }
+                            }
+                        }
+                    }
+                } catch (\Exception $exception) {
+                    Log::emergency("{$this->getClientName()}: Could not extract balance from the response", [
+                        "error" => $exception->getMessage()
+                    ]);
+
+                    if (config('app.enable_notifications')) {
+                        try {
+                            Log::info("{$this->getClientName()}: Notifying administrator of the failure");
+                            (new Balance())->notify(new BalanceError($exception->getMessage()));
+                        } catch (\Exception $exception) {
+                            Log::error("{$this->getClientName()}: Error sending notification");
+                        }
+                    }
+                }
+            }
             return true;
         } else {
             $body = json_decode($content);
@@ -445,10 +495,24 @@ class OrangeClient implements ClientInterface
         
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
     }
-    
+
+    /**
+     * @return BalanceObject
+     * @throws GeneralException
+     */
     public function balance(): BalanceObject
     {
-        return new BalanceObject();
+        $currentBalance = Balance::where('service_code', $this->config['service_code'])->get()->last();
+
+        if ($currentBalance) {
+            $balance = new BalanceObject();
+            $balance->setCurrent($currentBalance->current);
+            $balance->setPrevious($currentBalance->previous);
+            $balance->setTime($currentBalance->time);
+            $balance->setServiceCode($currentBalance->service_code);
+            return $balance;
+        }
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'No balance record found for this service');
     }
 
     /**
@@ -475,5 +539,23 @@ class OrangeClient implements ClientInterface
                 'Accept'        => 'application/json',
             ],
         ]);
+    }
+
+    /**
+     * @param string $pattern
+     * @param string $message
+     * @return mixed
+     * @throws GeneralException
+     */
+    protected function extractData(string $pattern, string $message)
+    {
+        preg_match($pattern, $message, $matches);
+        //if successfully mapped, will return the entire matching string and the balance
+        if (count($matches) != 2) {
+            throw new GeneralException(
+                sprintf('We are unable to extract the data from the message. Message: %s. pattern: %s', $message, $pattern)
+            );
+        }
+        return $matches[1];
     }
 }

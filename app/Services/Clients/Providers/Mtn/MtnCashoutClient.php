@@ -59,6 +59,7 @@ class MtnCashoutClient extends MtnClient
     /**
      * @return BalanceObject
      * @throws BadRequestException
+     * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function balance(): BalanceObject

@@ -408,8 +408,9 @@ class MtnClient implements ClientInterface
     }
 
     /**
-     * @return mixed
+     * @return BalanceObject
      * @throws BadRequestException
+     * @throws GeneralException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getAccountBalance()
@@ -513,7 +514,7 @@ class MtnClient implements ClientInterface
         if ($previousBalance) {
             return $previousBalance;
         }
-        throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get balance from response');
+        throw new GeneralException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get balance from response');
     }
 
     /**
