@@ -13,6 +13,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
+use App\Services\Objects\BalanceObject;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -56,11 +57,11 @@ class MtnCashoutClient extends MtnClient
     }
 
     /**
-     * @return float
+     * @return BalanceObject
      * @throws BadRequestException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function balance(): float
+    public function balance(): BalanceObject
     {
         return parent::getAccountBalance();
     }

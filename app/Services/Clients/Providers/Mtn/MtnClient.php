@@ -19,6 +19,7 @@ use App\Notifications\BalanceError;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
+use App\Services\Objects\BalanceObject;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
@@ -44,7 +45,7 @@ class MtnClient implements ClientInterface
     {
         // IMPLEMENTED IN CHILDREN
     }
-    public function balance(): float
+    public function balance(): BalanceObject
     {
         // IMPLEMENTED IN CHILDREN
     }
@@ -413,6 +414,15 @@ class MtnClient implements ClientInterface
      */
     public function getAccountBalance()
     {
+        $previousBalance = Balance::where('service_code', $this->config['service_code'])->get()->last();
+
+        // the prevous balance to be returned in case balance check fails
+        $balance = new BalanceObject();
+        $balance->setCurrent($previousBalance->current);
+        $balance->setPrevious($previousBalance->previous);
+        $balance->setTime($previousBalance->time);
+        $balance->setServiceCode($previousBalance->service_code);
+
         $bearerToken = $this->getAccessToken();
         $balanceUrl = $this->config['url'] . "/{$this->config['subscription']}/v1_0/account/balance";
 
@@ -443,6 +453,10 @@ class MtnClient implements ClientInterface
                 }
             }
 
+            if ($previousBalance) {
+
+                return $balance;
+            }
             throw new BadRequestException(ErrorCodesConstants::SERVICE_PROVIDER_CONNECTION_ERROR,
                 'Error connecting to the service provider to get the balance: ' . $exception->getMessage());
         }
@@ -457,16 +471,16 @@ class MtnClient implements ClientInterface
 
         if (isset($body->availableBalance)) {
 
-            $previousBalance = Balance::where('service_code', $this->config['service_code'])->get()->last();
             if ($previousBalance) {
                 if ($previousBalance->current == $body->availableBalance) {
                     $previousBalance->time = Carbon::now()->toDateTimeString();
                     $previousBalance->save();
-                    return $body->availableBalance;
+                    $balance->setTime($previousBalance->time);
+                    return $balance;
                 }
             }
 
-            Balance::create([
+            $currentBalance = Balance::create([
                 'previous' => $previousBalance ? $previousBalance->current : 0,
                 'current' => $body->availableBalance,
                 'service_code' => $this->config['service_code'],
@@ -474,7 +488,14 @@ class MtnClient implements ClientInterface
             ]);
 
             Log::info("{$this->getClientName()}: Balance retrieved and saved successfully");
-            return $body->availableBalance;
+
+            $balance = new BalanceObject();
+            $balance->setCurrent($currentBalance->current);
+            $balance->setPrevious($currentBalance->previous);
+            $balance->setTime($currentBalance->time);
+            $balance->setServiceCode($currentBalance->service_code);
+
+            return $balance;
         }
 
 
@@ -489,6 +510,9 @@ class MtnClient implements ClientInterface
 
         Log::emergency("{$this->getClientName()}: Cannot retrieve balance from response", ['service' => $this->config['service_code']]);
 
+        if ($previousBalance) {
+            return $previousBalance;
+        }
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get balance from response');
     }
 

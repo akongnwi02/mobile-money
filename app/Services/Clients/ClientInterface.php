@@ -11,6 +11,7 @@ namespace App\Services\Clients;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\GeneralException;
 use App\Services\Objects\Account;
+use App\Services\Objects\BalanceObject;
 
 interface ClientInterface
 {
@@ -29,7 +30,7 @@ interface ClientInterface
     public function buy(Account $account) : bool;
 
     /**
-     * @return float
+     * @return BalanceObject
      */
-    public function balance(): float;
+    public function balance(): BalanceObject;
 }

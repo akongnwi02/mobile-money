@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\GeneralException;
 use App\Exceptions\NotFoundException;
 use App\Http\Resources\AccountResource;
+use App\Http\Resources\BalanceResource;
 use App\Http\Resources\TransactionResource;
 use App\Jobs\PurchaseJob;
 use App\Models\Transaction;
@@ -125,7 +126,8 @@ class TransactionController extends Controller
             'service_code' => ['required', 'string', 'min:3',],
         ]);
 
-        return $this->client($request['service_code'])->balance();
+        $balance = $this->client($request['service_code'])->balance();
 
+        return new BalanceResource($balance);
     }
 }

@@ -18,6 +18,7 @@ use App\Notifications\PurchaseError;
 use App\Services\Clients\ClientInterface;
 use App\Services\Constants\ErrorCodesConstants;
 use App\Services\Objects\Account;
+use App\Services\Objects\BalanceObject;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -445,9 +446,9 @@ class OrangeClient implements ClientInterface
         throw new BadRequestException(ErrorCodesConstants::GENERAL_CODE, 'Cannot get token from response');
     }
     
-    public function balance(): float
+    public function balance(): BalanceObject
     {
-        // TODO: Implement balance() method.
+        return new BalanceObject();
     }
 
     /**
