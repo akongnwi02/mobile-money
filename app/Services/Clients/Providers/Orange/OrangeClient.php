@@ -413,7 +413,7 @@ class OrangeClient implements ClientInterface
     {
        $base64String = base64_encode($this->config['key'] . ':' . $this->config['secret']);
     
-        $url = $this->config['auth_url'] . "token";
+        $url = 'https://apistore.orange.cm/oauth2/token';
     
         Log::debug("{$this->getClientName()}: Generating new authorization token for {$this->config['service_code']}", [
             'url' => $url,
