@@ -533,7 +533,7 @@ class OrangeClient implements ClientInterface
             'allow_redirects' => true,
             'verify'          => false,
             'headers'         => [
-                'Authorization' => "Bearer $oauthToken",
+                'wso2-auth' => "Bearer $oauthToken",
                 'X-AUTH-TOKEN'  => $xauthToken,
                 'Content-Type'  => 'application/json',
                 'Accept'        => 'application/json',
